@@ -350,5 +350,3 @@ MigrationBackup/
 .ionide/
 
 appsettings.Development.json
-/VeraCustomTriage/VeraCustomTriage/Properties/launchSettings.json
-/VeraCustomTriage/VeraCustomTriage.Console/Properties/launchSettings.json

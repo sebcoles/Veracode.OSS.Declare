@@ -4,4 +4,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Models\DscBinary.cs~RF30a691cf.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.6.30.185433" />
+  </ItemGroup>
+
 </Project>

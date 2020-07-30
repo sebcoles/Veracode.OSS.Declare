@@ -7,10 +7,10 @@ namespace VeracodeDSC.Shared
 {
     public class JsonConfig
     {
-        public List<DscApp> Apps { get; set; }
-        public List<DscBinary> Binaries { get; set; }
-        public List<DscModule> Modules { get; set; }
-        public DscPolicy Policy { get; set; }
-        public List<DscUser> Users { get; set; }
+        public DscApp app { get; set; }
+        public List<DscBinary> binaries { get; set; }
+        public List<DscModule> modules { get; set; }
+        public DscPolicy policy { get; set; }
+        public List<DscUser> users { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace VeracodeDSC.DataAccess.Json
 {
     public interface IJsonRepository
     {
-        List<DscApp> Apps();
+        DscApp App();
         List<DscBinary> Binaries();
         List<DscModule> Modules();
         DscPolicy Policy();
@@ -19,7 +19,7 @@ namespace VeracodeDSC.DataAccess.Json
 
     public class JsonRepository : IJsonRepository
     {
-        private List<DscApp> _apps;
+        private DscApp _app;
         private List<DscBinary> _binaries;
         private List<DscModule> _modules;
         private DscPolicy _policy;
@@ -33,15 +33,15 @@ namespace VeracodeDSC.DataAccess.Json
                 string json = r.ReadToEnd();
                 config = JsonConvert.DeserializeObject<JsonConfig>(json);
             }
-            _apps = config.Apps;
-            _binaries = config.Binaries;
-            _modules = config.Modules;
-            _policy = config.Policy;
-            _users = config.Users;
+            _app = config.app;
+            _binaries = config.binaries;
+            _modules = config.modules;
+            _policy = config.policy;
+            _users = config.users;
         }
-        public List<DscApp> Apps()
+        public DscApp App()
         {
-            return _apps;
+            return _app;
         }
 
         public List<DscBinary> Binaries()
