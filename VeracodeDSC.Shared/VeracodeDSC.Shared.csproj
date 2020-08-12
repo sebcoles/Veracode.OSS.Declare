@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Models\DscBinary.cs~RF30a691cf.TMP" />
+    <None Remove="JsonConfig.cs~RFf9286c8.TMP" />
   </ItemGroup>
 
   <ItemGroup>

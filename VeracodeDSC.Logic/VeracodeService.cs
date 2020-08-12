@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using VeracodeDSC.Shared.Enums;
 using VeracodeDSC.Shared.Models;
+using VeracodeService;
 
 namespace VeracodeDSC
 {
@@ -36,6 +37,11 @@ namespace VeracodeDSC
     }
     public class VeracodeService : IVeracodeService
     {
+        private IVeracodeRepository _veracodeRepository;
+        public VeracodeService(IVeracodeRepository veracodeRepository)
+        {
+            _veracodeRepository = veracodeRepository;
+        }
         public void AddBinaryToScan(DscScan newScan, FileStream fileStream)
         {
             throw new System.NotImplementedException();
