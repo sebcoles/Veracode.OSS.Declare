@@ -5,18 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using VeracodeDSC.Shared;
-using VeracodeDSC.Shared.Models;
 
 namespace VeracodeDSC.DataAccess.Json
 {
     public interface IJsonRepository
     {
-        List<DscApp> Apps();       
+        List<ApplicationProfile> Apps();       
     }
 
     public class JsonRepository : IJsonRepository
     {
-        private DscApp[] _apps;
+        private List<ApplicationProfile> _apps;
 
         public JsonRepository(string filePath)
         {
@@ -28,9 +27,9 @@ namespace VeracodeDSC.DataAccess.Json
             }
             _apps = config.application_profiles;
         }
-        public List<DscApp> Apps()   
+        public List<ApplicationProfile> Apps()   
         {
-            return _apps.ToList();
+            return _apps;
         }
     }
 }

@@ -1,39 +1,41 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using VeracodeDSC.Shared;
 using VeracodeDSC.Shared.Enums;
-using VeracodeDSC.Shared.Models;
 using VeracodeService;
 
 namespace VeracodeDSC
 {
     public interface IVeracodeService
     {
-        bool DoesAppExist(DscApp app);
-        bool HasAppChanged(DscApp app);
-        bool CreateApp(DscApp app);
-        bool UpdateApp(DscApp app);
-        bool DoesTeamExistForApp(DscApp app);
-        bool CreateTeamForApp(DscApp app);
-        bool IsUserAssignedToTeam(DscUser user, DscApp app);
-        bool DoesUserExist(DscUser user);
-        bool HasUserChanged(DscUser user);
-        bool CreateUser(DscUser user);
-        bool UpdateUser(DscUser user);
-        bool DoesPolicyExist(DscApp app);
-        bool CreatePolicy(DscApp app, DscPolicy policy);
-        bool UpdatePolicy(DscApp app, DscPolicy policy);
-        bool HasPolicyChanged(DscApp app, DscPolicy policy);
-        DscScan CreateScan(DscApp app);
-        ScanStatus GetScanStatus(DscScan scan);
-        bool CancelScan(DscScan scan);
-        bool IsPolicyScanInProgress(DscApp app);
-        DscScan GetScan(DscApp app);
-        void AddBinaryToScan(DscScan newScan, FileStream fileStream);
-        void StartPrescan(DscScan newScan);
-        PreScanStatus GetPrescanStatus(DscScan newScan);
-        DscModule[] GetModules(DscScan newScan);
-        void StartScan(DscScan newScan);
-        void DeleteScan(DscScan newScan);
+        bool DoesAppExist(ApplicationProfile app);
+        bool HasAppChanged(ApplicationProfile app);
+        bool CreateApp(ApplicationProfile app);
+        bool UpdateApp(ApplicationProfile app);
+        bool DoesTeamExistForApp(ApplicationProfile app);
+        bool CreateTeamForApp(ApplicationProfile app);
+        bool IsUserAssignedToTeam(User user, ApplicationProfile app);
+        bool DoesUserExist(User user);
+        bool HasUserChanged(User user);
+        bool CreateUser(User user);
+        bool UpdateUser(User user);
+        bool DoesPolicyExist(ApplicationProfile app);
+        bool CreatePolicy(ApplicationProfile app, Policy policy);
+        bool UpdatePolicy(ApplicationProfile app, Policy policy);
+        bool HasPolicyChanged(ApplicationProfile app, Policy policy);
+        string CreateScan(ApplicationProfile app);
+        ScanStatus GetScanStatus(string scan);
+        bool CancelScan(string scan);
+        bool IsPolicyScanInProgress(ApplicationProfile app);
+        string GetScan(ApplicationProfile app);
+        void AddBinaryToScan(string newScan, FileStream fileStream);
+        void StartPrescan(string newScan);
+        PreScanStatus GetPrescanStatus(string newScan);
+        Module[] GetModules(string newScan);
+        void StartScan(string newScan);
+        void DeleteScan(string newScan);
+        User[] GetUserEmailsOnTeam(ApplicationProfile app);
+        string[] GetScanMessages(ApplicationProfile app);
     }
     public class VeracodeService : IVeracodeService
     {
@@ -42,132 +44,142 @@ namespace VeracodeDSC
         {
             _veracodeRepository = veracodeRepository;
         }
-        public void AddBinaryToScan(DscScan newScan, FileStream fileStream)
+        public void AddBinaryToScan(string newScan, FileStream fileStream)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool CancelScan(DscScan scan)
+        public bool CancelScan(string scan)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool CreateApp(DscApp app)
+        public bool CreateApp(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool CreatePolicy(DscApp app, DscPolicy policy)
+        public bool CreatePolicy(ApplicationProfile app, Policy policy)
         {
             throw new System.NotImplementedException();
         }
 
-        public DscScan CreateScan(DscApp app)
+        public string CreateScan(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool CreateTeamForApp(DscApp app)
+        public bool CreateTeamForApp(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool CreateUser(DscUser user)
+        public bool CreateUser(User user)
         {
             throw new System.NotImplementedException();
         }
 
-        public void DeleteScan(DscScan newScan)
+        public void DeleteScan(string newScan)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool DoesAppExist(DscApp app)
+        public bool DoesAppExist(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool DoesPolicyExist(DscApp app)
+        public bool DoesPolicyExist(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool DoesTeamExistForApp(DscApp app)
+        public bool DoesTeamExistForApp(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool DoesUserExist(DscUser user)
+        public bool DoesUserExist(User user)
         {
             throw new System.NotImplementedException();
         }
 
-        public DscModule[] GetModules(DscScan newScan)
+        public Module[] GetModules(string newScan)
         {
             throw new System.NotImplementedException();
         }
 
-        public PreScanStatus GetPrescanStatus(DscScan newScan)
+        public PreScanStatus GetPrescanStatus(string newScan)
         {
             throw new System.NotImplementedException();
         }
 
-        public DscScan GetScan(DscApp app)
+        public string GetScan(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public ScanStatus GetScanStatus(DscScan scan)
+        public string[] GetScanMessages(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool HasAppChanged(DscApp app)
+        public ScanStatus GetScanStatus(string scan)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool HasPolicyChanged(DscApp app, DscPolicy policy)
+        public User[] GetUserEmailsOnTeam(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool HasUserChanged(DscUser user)
+        public bool HasAppChanged(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool IsPolicyScanInProgress(DscApp app)
+        public bool HasPolicyChanged(ApplicationProfile app, Policy policy)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool IsUserAssignedToTeam(DscUser user, DscApp app)
+        public bool HasUserChanged(User user)
         {
             throw new System.NotImplementedException();
         }
 
-        public void StartPrescan(DscScan newScan)
+        public bool IsPolicyScanInProgress(ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public void StartScan(DscScan newScan)
+        public bool IsUserAssignedToTeam(User user, ApplicationProfile app)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool UpdateApp(DscApp app)
+        public void StartPrescan(string newScan)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool UpdatePolicy(DscApp app, DscPolicy policy)
+        public void StartScan(string newScan)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool UpdateUser(DscUser user)
+        public bool UpdateApp(ApplicationProfile app)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool UpdatePolicy(ApplicationProfile app, Policy policy)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool UpdateUser(User user)
         {
             throw new System.NotImplementedException();
         }
