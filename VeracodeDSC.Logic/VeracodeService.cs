@@ -12,17 +12,17 @@ namespace VeracodeDSC
         bool DoesAppExist(ApplicationProfile app);
         bool HasAppChanged(ApplicationProfile app);
         bool CreateApp(ApplicationProfile app);
-        bool UpdateApp(ApplicationProfile app);
+        void UpdateApp(ApplicationProfile app);
         bool DoesTeamExistForApp(ApplicationProfile app);
         bool CreateTeamForApp(ApplicationProfile app);
         bool IsUserAssignedToTeam(User user, ApplicationProfile app);
         bool DoesUserExist(User user);
         bool HasUserChanged(User user);
         bool CreateUser(User user);
-        bool UpdateUser(User user);
+        void UpdateUser(User user);
         bool DoesPolicyExist(ApplicationProfile app);
         bool CreatePolicy(ApplicationProfile app, Policy policy);
-        bool UpdatePolicy(ApplicationProfile app, Policy policy);
+        void UpdatePolicy(ApplicationProfile app, Policy policy);
         bool HasPolicyChanged(ApplicationProfile app, Policy policy);
         string CreateScan(ApplicationProfile app);
         BuildStatusType GetScanStatus(string app_id, string scan);
@@ -31,8 +31,8 @@ namespace VeracodeDSC
         void AddBinaryToScan(string app_id, string filepath);
         void StartPrescan(string app_id);
         Module[] GetModules(string app_id, string scan_id);
-        void StartScan(string app_id, string modules);
-        void DeleteScan(string newScan);
+        void StartScan(string app_id, string modules, string? scan_name);
+        void DeleteScan(string app_id);
         User[] GetUserEmailsOnTeam(ApplicationProfile app);
     }
     public class VeracodeService : IVeracodeService
@@ -218,19 +218,52 @@ namespace VeracodeDSC
 
         public bool HasPolicyChanged(ApplicationProfile app, Policy policy)
         {
-            throw new System.NotImplementedException();
+            var retrievedPolicy = _veracodeRepository.GetPolicies()
+                .SingleOrDefault(x => x.name == app.application_name);
+            if(retrievedPolicy.description != policy.description) return true;
+            if (retrievedPolicy.sca_blacklist_grace_period != policy.sca_blacklist_grace_period) return true;
+            if (retrievedPolicy.score_grace_period != policy.score_grace_period) return true;
+            if (retrievedPolicy.sev0_grace_period != policy.sev0_grace_period) return true;
+            if (retrievedPolicy.sev1_grace_period != policy.sev1_grace_period) return true;
+            if (retrievedPolicy.sev2_grace_period != policy.sev2_grace_period) return true;
+            if (retrievedPolicy.sev3_grace_period != policy.sev3_grace_period) return true;
+            if (retrievedPolicy.sev4_grace_period != policy.sev4_grace_period) return true;
+            if (retrievedPolicy.sev5_grace_period != policy.sev5_grace_period) return true;
+
+            foreach (var custom_severity in retrievedPolicy.custom_severities)
+                if(!policy.custom_severities.Any(x => x.cwe == custom_severity.cwe && x.severity == custom_severity.severity))
+                    return true;
+
+            foreach (var finding_rule in retrievedPolicy.finding_rules)
+                if (!policy.finding_rules.Any(x => x.type == finding_rule.type && x.value == finding_rule.value))
+                    return true;
+
+            foreach (var scan_frequency_rule in retrievedPolicy.scan_frequency_rules)
+                if (!policy.scan_frequency_rules.Any(x => x.frequency == scan_frequency_rule.frequency && x.scan_type == scan_frequency_rule.scan_type))
+                    return true;
+
+            return false;
         }
 
         public bool HasUserChanged(User user)
         {
-            throw new System.NotImplementedException();
+            var returnedUser = _veracodeRepository.GetUser(user.email_address);
+            if(returnedUser.first_name != user.first_name) return true;
+            if (returnedUser.last_name != user.last_name) return true;
+            var myRoles = user.roles.Split(",").ToArray();
+            var savedRoles = returnedUser.roles.Split(",").ToArray();
+
+            foreach (var role in myRoles)
+                if (!savedRoles.Any(x => x == role))
+                    return true;
+
+            return false;
         }
 
         public bool IsPolicyScanInProgress(ApplicationProfile app)
         {
-
-            throw new NotImplementedException();
-           // return GetScanStatus() == BuildStatusType.ScanInProcess;
+            var latestBuild = _veracodeRepository.GetLatestcan(app.id);
+            return latestBuild.build.analysis_unit[0].status != BuildStatusType.PreScanSubmitted || latestBuild.build.analysis_unit[0].status != BuildStatusType.ScanInProcess;
         }
 
         public bool IsUserAssignedToTeam(User user, ApplicationProfile app)
@@ -243,24 +276,55 @@ namespace VeracodeDSC
             _veracodeRepository.StartPrescan(app_id);
         }
 
-        public void StartScan(string app_id, string modules)
+        public void StartScan(string app_id, string modules, string? scan_name)
         {
             _veracodeRepository.StartScan(app_id, modules);
         }
 
-        public bool UpdateApp(ApplicationProfile app)
+        public void UpdateApp(ApplicationProfile app)
         {
-            throw new System.NotImplementedException();
+            var app_id = _veracodeRepository
+                .GetAllApps()
+                .SingleOrDefault(x => x.app_name == app.application_name)
+                .app_id;
+
+            var returnedApp = _veracodeRepository.GetAppDetail($"{app_id}").application[0];
+            returnedApp.business_criticality = VeracodeEnumConverter.Convert(app.criticality);
+            returnedApp.business_owner = app.business_owner;
+            returnedApp.business_owner_email = app.business_owner_email;
+            _veracodeRepository.UpdateApp(returnedApp);
         }
 
-        public bool UpdatePolicy(ApplicationProfile app, Policy policy)
+        public void UpdatePolicy(ApplicationProfile app, Policy policy)
         {
-            throw new System.NotImplementedException();
+            var retrievedPolicy = _veracodeRepository.GetPolicies()
+                .SingleOrDefault(x => x.name == app.application_name);
+            retrievedPolicy.description = policy.description;
+            retrievedPolicy.sca_blacklist_grace_period = policy.sca_blacklist_grace_period;
+            retrievedPolicy.score_grace_period = policy.score_grace_period;
+            retrievedPolicy.sev0_grace_period = policy.sev0_grace_period;
+            retrievedPolicy.sev1_grace_period = policy.sev1_grace_period;
+            retrievedPolicy.sev2_grace_period = policy.sev2_grace_period;
+            retrievedPolicy.sev3_grace_period = policy.sev3_grace_period;
+            retrievedPolicy.sev4_grace_period = policy.sev4_grace_period;
+            retrievedPolicy.sev5_grace_period = policy.sev5_grace_period;
+            retrievedPolicy.custom_severities = policy.custom_severities;
+            retrievedPolicy.finding_rules = policy.finding_rules;
+            retrievedPolicy.scan_frequency_rules = policy.scan_frequency_rules;
+            _veracodeRepository.UpdatePolicy(retrievedPolicy, retrievedPolicy.guid);
         }
 
-        public bool UpdateUser(User user)
+        public void UpdateUser(User user)
         {
-            throw new System.NotImplementedException();
+            var returnedUser = _veracodeRepository.GetUser(user.email_address);
+            returnedUser.first_name = user.first_name;
+            returnedUser.last_name = user.last_name;
+            var roles = user.roles
+             .Split(",")
+             .Select(EnumConverter.Convert)
+             .ToArray();
+
+            _veracodeRepository.UpdateUser(returnedUser, roles);
         }
     }
 }

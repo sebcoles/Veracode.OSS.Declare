@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using VeracodeService.Rest;
 
 namespace VeracodeDSC.Shared
 {
@@ -25,27 +26,10 @@ namespace VeracodeDSC.Shared
         public List<string> messages { get; set; }
     }
 
-    public class CustomSeverity
-    {
-        public int cwe { get; set; }
-        public int severity { get; set; }
-    }
-
-    public class FindingRule
-    {
-        public List<string> scan_type { get; set; }
-        public string type { get; set; }
-        public string value { get; set; }
-    }
-
-    public class ScanFrequencyRule
-    {
-        public string frequency { get; set; }
-        public string scan_type { get; set; }
-    }
-
     public class Policy
     {
+        public int sca_blacklist_grace_period { get; set; }
+
         public List<CustomSeverity> custom_severities { get; set; }
         public List<FindingRule> finding_rules { get; set; }
         public List<ScanFrequencyRule> scan_frequency_rules { get; set; }
@@ -55,6 +39,8 @@ namespace VeracodeDSC.Shared
         public int sev3_grace_period { get; set; }
         public int sev4_grace_period { get; set; }
         public int sev5_grace_period { get; set; }
+        public string description { get; set; }
+        public int score_grace_period { get; set; }
     }
 
     public class User

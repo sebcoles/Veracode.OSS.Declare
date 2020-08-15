@@ -13,7 +13,8 @@ namespace VeracodeDSC.Logic
         void MakeItSoPolicy(ApplicationProfile app, Policy policy);
         void MakeItSoUser(User user, ApplicationProfile app);
         void MakeItSoTeam(ApplicationProfile app);
-        void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules);
+        bool ConformConfiguration(ApplicationProfile app, Binary[] binaries, Module[] configModules, bool isTest);
+        void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules, string? scan_name);
     }
     public class DscLogic : IDscLogic
     {
@@ -185,19 +186,44 @@ namespace VeracodeDSC.Logic
             }
         }
 
-        public void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules)
+        public bool ConformConfiguration(ApplicationProfile app, Binary[] binaries, Module[] configModules, bool isTest)
+        {
+            try
+            {
+                if (!_veracodeService.IsPolicyScanInProgress(app))
+                {
+                    var scan_id = _veracodeService.CreateScan(app);
+                    Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading binaries");
+                    UploadFiles(app, scan_id, binaries);
+                    RunPreScan(app, scan_id);
+                    ConformModules(app, scan_id, configModules);
+
+                    if(isTest)
+                        _veracodeService.DeleteScan(app.id);
+                } else
+                {
+                    Console.WriteLine($"Policy scan for {app.application_name} already in progress.");
+                    Console.WriteLine($"This must be cancelled or completed before this job can be continued.");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.Message}.");
+                return false;
+            }
+            Console.WriteLine($"Configuration conforms.");
+            return true;
+        }
+
+        public void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules, string? scan_name)
         {          
             try
             {
-                IsScanInProgress(app);
-                var scan_id = _veracodeService.CreateScan(app);
-                Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading binaries");
-                UploadFiles(app, scan_id, binaries);
-                RunPreScan(app, scan_id);
-                ConformModules(app, scan_id, configModules);
+                ConformConfiguration(app, binaries, configModules, false);
                 RunScan(app, 
                     string.Join(",", configModules
-                    .Select(y => y.module_id).ToArray()));
+                    .Select(y => y.module_id).ToArray()),
+                    scan_name);
             }
             catch (Exception e)
             {
@@ -205,15 +231,6 @@ namespace VeracodeDSC.Logic
                 return;
             }
             Console.WriteLine($"Deployment complete.");
-        }
-
-        public void IsScanInProgress(ApplicationProfile app)
-        {
-            Console.WriteLine($"Checking if a policy scan for {app.application_name} is already in progress.");
-            if (_veracodeService.IsPolicyScanInProgress(app))
-                throw new Exception($"Policy scan for {app.application_name} in progress.");
-            
-            Console.WriteLine($"No scan in progress. Creating policy scan for {app.application_name}.");
         }
 
         public void UploadFiles(ApplicationProfile app, string scan_id, Binary[] binaries)
@@ -230,22 +247,22 @@ namespace VeracodeDSC.Logic
             }
             Task.WaitAll(tasks);
         }
-        public void RunScan(ApplicationProfile app, string newScan)
+        public void RunScan(ApplicationProfile app, string scan_id, string? scan_name)
         {
-            _veracodeService.StartScan(app.id, newScan);
+            _veracodeService.StartScan(app.id, scan_id, scan_name);
 
             var scanStatus = BuildStatusType.ScanInProcess;
             while (scanStatus == BuildStatusType.ScanInProcess)
             {
-                Console.WriteLine($"Scan {newScan} is still running.");
+                Console.WriteLine($"Scan {scan_id} is still running.");
                 Thread.Sleep(60000);
-                scanStatus = _veracodeService.GetScanStatus(app.id, newScan);
+                scanStatus = _veracodeService.GetScanStatus(app.id, scan_id);
             }
 
             if (scanStatus == BuildStatusType.ScanErrors)            
                 throw new Exception("Scan status returned an error status.");
             
-            Console.WriteLine($"Scan complete for {newScan}.");
+            Console.WriteLine($"Scan complete for {scan_id}.");
         }
 
         public void RunPreScan(ApplicationProfile app, string newScan)

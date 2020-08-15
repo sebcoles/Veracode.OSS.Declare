@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using VeracodeDSC.DataAccess.Json;
+using VeracodeDSC.Logic;
 using VeracodeDSC.Options;
 using VeracodeDSC.Shared;
 using VeracodeService;
@@ -30,6 +31,8 @@ namespace VeracodeDSC
                 VeracodeFileHelper.GetConfiguration(
                     Configuration.GetValue<string>("VeracodeFileLocation"))));
             serviceCollection.AddScoped<IVeracodeRepository, VeracodeRepository>();
+            serviceCollection.AddScoped<IVeracodeService, VeracodeService>();
+            serviceCollection.AddScoped<IDscLogic, DscLogic>();
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
             Parser.Default.ParseArguments<
@@ -46,6 +49,15 @@ namespace VeracodeDSC
         static int Test(TestOptions options)
         {
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var dscLogic = _serviceProvider.GetService<IDscLogic>();
+
+            foreach (var app in jsonRepository.Apps())
+            {
+                dscLogic.ConformConfiguration(app,
+                    app.binaries.ToArray(),
+                    app.modules.ToArray(), true);
+            }
+
             return 1;
         }
 
