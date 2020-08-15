@@ -14,9 +14,15 @@ namespace VeracodeDSC.Shared
 
     public class Module
     {
+        public Module()
+        {
+            messages = new List<string>();
+        }
         public string module_id { get; set; }
         public string module_name { get; set; }
-        public bool entry_point { get; set; }
+        public bool can_be_entry_point { get; set; }
+        public bool is_entry_point { get; set; }
+        public List<string> messages { get; set; }
     }
 
     public class CustomSeverity
@@ -61,6 +67,7 @@ namespace VeracodeDSC.Shared
 
     public class ApplicationProfile
     {
+        public string id { get; set; }
         public string application_name { get; set; }
         public string criticality { get; set; }
         public string business_owner { get; set; }

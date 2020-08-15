@@ -5,7 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.11.182438" />
+    <None Remove="DscLogic.cs~RFfbcd122.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.15.152126" />
   </ItemGroup>
 
   <ItemGroup>

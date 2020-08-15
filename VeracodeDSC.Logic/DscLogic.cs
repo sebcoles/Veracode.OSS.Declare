@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VeracodeDSC.Shared;
-using VeracodeDSC.Shared.Enums;
+using VeracodeService.Models;
 
 namespace VeracodeDSC.Logic
 {
@@ -193,12 +190,14 @@ namespace VeracodeDSC.Logic
             try
             {
                 IsScanInProgress(app);
-                var newScan = _veracodeService.CreateScan(app);
-                Console.WriteLine($"New scan created with Build Id {newScan}. Uploading binaries");
-                UploadFiles(newScan, binaries);
-                RunPreScan(newScan);
-                ConformModules(newScan, configModules);
-                RunScan(newScan);
+                var scan_id = _veracodeService.CreateScan(app);
+                Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading binaries");
+                UploadFiles(app, scan_id, binaries);
+                RunPreScan(app, scan_id);
+                ConformModules(app, scan_id, configModules);
+                RunScan(app, 
+                    string.Join(",", configModules
+                    .Select(y => y.module_id).ToArray()));
             }
             catch (Exception e)
             {
@@ -212,73 +211,84 @@ namespace VeracodeDSC.Logic
         {
             Console.WriteLine($"Checking if a policy scan for {app.application_name} is already in progress.");
             if (_veracodeService.IsPolicyScanInProgress(app))
-            {
-                var scanMessages = _veracodeService.GetScanMessages(app);
-                foreach (var message in scanMessages)
-                    Console.WriteLine(message);
-
                 throw new Exception($"Policy scan for {app.application_name} in progress.");
-            }
-
+            
             Console.WriteLine($"No scan in progress. Creating policy scan for {app.application_name}.");
         }
 
-        public void UploadFiles(string newScan, Binary[] binaries)
+        public void UploadFiles(ApplicationProfile app, string scan_id, Binary[] binaries)
         {
             var tasks = new Task[binaries.Length];
             for (var i = 0; i < tasks.Length; i++)
             {
-                var fileStream = new FileStream(binaries[i].location, FileMode.Open, FileAccess.Read);
                 tasks[i] = new Task(() =>
                 {
-                    Console.WriteLine($"Uploading {binaries[i]} to scan {newScan}.");
-                    _veracodeService.AddBinaryToScan(newScan, fileStream);
+                    Console.WriteLine($"Uploading {binaries[i]} to scan {scan_id}.");
+                    _veracodeService.AddBinaryToScan(app.id, binaries[i].location);
                     Console.WriteLine($"Upload of {binaries[i]} complete.");
                 });
             }
             Task.WaitAll(tasks);
         }
-        public void RunScan(string newScan)
+        public void RunScan(ApplicationProfile app, string newScan)
         {
-            _veracodeService.StartScan(newScan);
+            _veracodeService.StartScan(app.id, newScan);
 
-            var scanStatus = ScanStatus.Running;
-            while (scanStatus == ScanStatus.Running)
+            var scanStatus = BuildStatusType.ScanInProcess;
+            while (scanStatus == BuildStatusType.ScanInProcess)
             {
                 Console.WriteLine($"Scan {newScan} is still running.");
                 Thread.Sleep(60000);
-                scanStatus = _veracodeService.GetScanStatus(newScan);
+                scanStatus = _veracodeService.GetScanStatus(app.id, newScan);
             }
 
-            if (scanStatus == ScanStatus.Error)            
+            if (scanStatus == BuildStatusType.ScanErrors)            
                 throw new Exception("Scan status returned an error status.");
             
             Console.WriteLine($"Scan complete for {newScan}.");
         }
 
-        public void RunPreScan(string newScan)
+        public void RunPreScan(ApplicationProfile app, string newScan)
         {
-            _veracodeService.StartPrescan(newScan);
+            _veracodeService.StartPrescan(app.id);
 
-            var scanStatus = PreScanStatus.Running;
-            while (scanStatus == PreScanStatus.Running)
+            var scanStatus = BuildStatusType.PreScanSubmitted;
+            while (scanStatus == BuildStatusType.PreScanSubmitted)
             {
                 Console.WriteLine($"Pre scan {newScan} is still running.");
                 Thread.Sleep(60000);
-                scanStatus = _veracodeService.GetPrescanStatus(newScan);
+                scanStatus = _veracodeService.GetScanStatus(app.id, newScan);
             }
 
-            if (scanStatus == PreScanStatus.Error)
+            if (scanStatus == BuildStatusType.PreScanFailed)
                 throw new Exception("Pre scan status returned an error status.");
 
             Console.WriteLine($"Pre scan complete for {newScan}.");
         }
 
-        public void ConformModules(string newScan, Module[] configModules)
+        public void ConformModules(ApplicationProfile app, string newScan, Module[] configModules)
         {
-            var modules = _veracodeService.GetModules(newScan);
+            var modules = _veracodeService.GetModules(app.id, newScan);
             var missingFromConfig = modules.Except(configModules);
             var missingFromPrescan = configModules.Except(modules);
+
+            var invalidEntryPoints = configModules.Where(x => x.is_entry_point 
+                && modules.Any(y => y.module_id == x.module_id && !y.can_be_entry_point));
+
+            if(invalidEntryPoints.Count() > 0)
+            {
+                foreach (var mod in invalidEntryPoints)
+                {
+                    Console.WriteLine($"Module module_id={mod.module_id}, " +
+                                      $"module_name={mod.module_name} " +
+                                      $"cannot be selected as an entry point. " +
+                                      $"Please set entry_poiny to false or resolve issue.");
+                    foreach (var message in mod.messages)
+                        Console.WriteLine(message);
+                }
+                _veracodeService.DeleteScan(newScan);
+                throw new Exception($"Module selection configuration was incorrect for {newScan}.");
+            }
 
             if (missingFromConfig.Count() > 0 || missingFromPrescan.Count() > 0)
             {
@@ -286,13 +296,13 @@ namespace VeracodeDSC.Logic
                     foreach(var mod in missingFromConfig)
                         Console.WriteLine($"Module module_id={mod.module_id}, " +
                             $"module_name={mod.module_name}, " +
-                            $"entry_point={mod.entry_point} was missing from the configuration.");
+                            $"can_be_entry_point={mod.can_be_entry_point} was missing from the configuration.");
 
                 if (missingFromPrescan.Count() > 0)
                     foreach (var mod in missingFromPrescan)
                         Console.WriteLine($"Module module_id={mod.module_id}, " +
                             $"module_name={mod.module_name}, " +
-                            $"entry_point={mod.entry_point} was missing from the pre scan results.");
+                            $"can_be_entry_point={mod.can_be_entry_point} was missing from the pre scan results.");
 
                 _veracodeService.DeleteScan(newScan);
                 throw new Exception($"Module selection configuration was incorrect for {newScan}.");
