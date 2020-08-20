@@ -1,20 +1,32 @@
 ﻿{
   "application_profiles": [
     {
-      "application_name": "",
-      "criticality": "",
-      "business_owner": "",
-      "business_owner_email": "",
+      "application_name": "Test App",
+      "criticality": "Very High",
+      "business_owner": "seb",
+      "business_owner_email": "jam@jam.jam",
       "binaries": [
         {
-          "location": ""
+          "location": "Assets/testapp1.zip"
+        },
+        {
+          "location": "Assets/testapp2.zip"
         }
       ],
       "modules": [
         {
-          "module_id": "",
-          "module_name": "",
-          "entry_point": true
+          "module_name": "ConsoleApp1.dll",
+          "entry_point": "true"
+        },
+        {
+          "module_name": "ConsoleApp1.exe"
+        },
+        {
+          "module_name": "ConsoleApp1.dll",
+          "entry_point": "true"
+        },
+        {
+          "module_name": "ConsoleApp1.exe"
         }
       ],
       "policy": {
@@ -48,10 +60,10 @@
       },
       "users": [
         {
-          "first_name": "",
-          "last_name": "",
-          "email_address": "",
-          "roles": ""
+          "first_name": "Seb",
+          "last_name": "Coles",
+          "email_address": "jam@jam.jam",
+          "roles": "Creator, Any Scan"
         }
       ]
     }

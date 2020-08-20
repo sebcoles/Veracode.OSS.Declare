@@ -18,8 +18,8 @@ namespace VeracodeDSC
 
         static void Main(string[] args)
         {
-                        IConfiguration Configuration = new ConfigurationBuilder()
-   .SetBasePath(Directory.GetCurrentDirectory())
+            IConfiguration Configuration = new ConfigurationBuilder()
+.SetBasePath(Directory.GetCurrentDirectory())
 #if DEBUG
                 .AddJsonFile($"appsettings.Development.json", false)
 #else
@@ -36,8 +36,8 @@ namespace VeracodeDSC
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
             Parser.Default.ParseArguments<
-                TestOptions, 
-                ScanOptions, 
+                TestOptions,
+                ScanOptions,
                 ConfigureOptions>(args)
                 .MapResult(
                     (TestOptions options) => Test(options),
@@ -50,14 +50,24 @@ namespace VeracodeDSC
         {
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
             var dscLogic = _serviceProvider.GetService<IDscLogic>();
-
+            var results = new List<KeyValuePair<string, bool>>();
             foreach (var app in jsonRepository.Apps())
             {
-                dscLogic.ConformConfiguration(app,
-                    app.binaries.ToArray(),
-                    app.modules.ToArray(), true);
+                var doesScanConfirm = dscLogic.ConformConfiguration(app,
+                        app.binaries.ToArray(),
+                        app.modules.ToArray(), true);
+
+                results.Add(new KeyValuePair<string, bool>(
+                    app.application_name,
+                    doesScanConfirm
+                ));
             }
 
+            foreach (var summary in results)
+            {
+                var message = summary.Value ? "DOES" : "DOES NOT";
+                Console.Write($"Application {summary.Key} scan config {message} confirm.");
+            }
             return 1;
         }
 
@@ -70,6 +80,15 @@ namespace VeracodeDSC
         static int Configure(ConfigureOptions options)
         {
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var dscLogic = _serviceProvider.GetService<IDscLogic>();
+            foreach (var app in jsonRepository.Apps())
+            {
+                dscLogic.MakeItSoApp(app);
+                dscLogic.MakeItSoPolicy(app, app.policy);
+                dscLogic.MakeItSoTeam(app);
+                foreach (var user in app.users)
+                    dscLogic.MakeItSoUser(user, app);
+            }
             return 1;
         }
 

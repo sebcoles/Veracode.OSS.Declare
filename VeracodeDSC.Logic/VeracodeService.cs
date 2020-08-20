@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using VeracodeDSC.Shared;
 using VeracodeService;
@@ -18,7 +19,7 @@ namespace VeracodeDSC
         bool IsUserAssignedToTeam(User user, ApplicationProfile app);
         bool DoesUserExist(User user);
         bool HasUserChanged(User user);
-        bool CreateUser(User user);
+        bool CreateUser(User user, ApplicationProfile app);
         void UpdateUser(User user);
         bool DoesPolicyExist(ApplicationProfile app);
         bool CreatePolicy(ApplicationProfile app, Policy policy);
@@ -31,7 +32,7 @@ namespace VeracodeDSC
         void AddBinaryToScan(string app_id, string filepath);
         void StartPrescan(string app_id);
         Module[] GetModules(string app_id, string scan_id);
-        void StartScan(string app_id, string modules, string? scan_name);
+        void StartScan(string app_id, string modules);
         void DeleteScan(string app_id);
         User[] GetUserEmailsOnTeam(ApplicationProfile app);
     }
@@ -56,12 +57,13 @@ namespace VeracodeDSC
 
         public bool CreateApp(ApplicationProfile app)
         {
-            _veracodeRepository.CreateApp(new ApplicationType
+            var newApp = _veracodeRepository.CreateApp(new ApplicationType
             {
                 app_name = app.application_name,
                 business_owner = app.business_owner,
-                business_owner_email = app.business_owner,
-                business_criticality = VeracodeEnumConverter.Convert(app.criticality)
+                business_owner_email = app.business_owner_email,
+                business_criticality = VeracodeEnumConverter.Convert(app.criticality),
+                policy = app.policy.name
             });
             return _veracodeRepository
                 .GetAllApps()
@@ -72,8 +74,21 @@ namespace VeracodeDSC
         {
             _veracodeRepository.CreatePolicy(new PolicyVersion
             {
-               name = app.application_name
-               // MORE NEEDED
+               name = $"{app.application_name}",
+               description = $"Custom policy for application {app.application_name}",
+               sca_blacklist_grace_period = policy.sca_blacklist_grace_period,
+               score_grace_period = policy.score_grace_period,
+               sev0_grace_period = policy.sev0_grace_period,
+               sev1_grace_period = policy.sev1_grace_period,
+               sev2_grace_period = policy.sev2_grace_period,
+               sev3_grace_period = policy.sev3_grace_period,
+               sev4_grace_period = policy.sev4_grace_period,
+               sev5_grace_period = policy.sev5_grace_period,
+               type = "CUSTOMER",
+               vendor_policy = false,
+               scan_frequency_rules = policy.scan_frequency_rules,
+               finding_rules = policy.finding_rules,
+               created = DateTime.Now
             });
             return _veracodeRepository
                 .GetPolicies()
@@ -95,14 +110,14 @@ namespace VeracodeDSC
         {
             _veracodeRepository.CreateTeam(new teaminfo
             {
-                team_name = app.application_name
+                team_name = $"{app.application_name}"
             });
             return _veracodeRepository
                 .GetTeams()
                 .Any(x => x.team_name == app.application_name);
         }
 
-        public bool CreateUser(User user)
+        public bool CreateUser(User user, ApplicationProfile app)
         {
             var roles = user.roles
                 .Split(",")
@@ -113,7 +128,8 @@ namespace VeracodeDSC
             {
                 email_address = user.email_address,
                 first_name = user.first_name,
-                last_name = user.last_name
+                last_name = user.last_name,
+                teams = app.application_name
             }, roles);
 
             return _veracodeRepository
@@ -163,9 +179,9 @@ namespace VeracodeDSC
                        module_name = x.name,
                        can_be_entry_point = !x.has_fatal_errors,
                        module_id = $"{x.id}",
-                       messages = x.issue
-                       .Select(x => x.details)
-                       .ToList()
+                       messages = x.issue != null ?
+                       x.issue.Select(x => x.details).ToList()
+                       : new List<string>()
                    }).ToArray();
         }
 
@@ -178,9 +194,12 @@ namespace VeracodeDSC
 
         public User[] GetUserEmailsOnTeam(ApplicationProfile app)
         {
-            //var teaminfo = _veracodeRepository.GetTeams().Single(x => x.team_name == app.application_name);
-            //var users = _veracodeRepository.GetUsers().
-            throw new NotImplementedException();
+            var teamlite = _veracodeRepository.GetTeams().Single(x => x.team_name == $"{app.application_name}");
+            return _veracodeRepository.GetTeamInfo(teamlite.team_id, true, false)
+                .user.Select(x => new User
+            {
+                    email_address = x.email_address
+            }).ToArray();
         }
 
         public bool HasAppChanged(ApplicationProfile app)
@@ -198,19 +217,19 @@ namespace VeracodeDSC
 
             if(appDetail.application[0].business_criticality != VeracodeEnumConverter.Convert(app.criticality))
             {
-                Console.WriteLine($"The criticality for {app.application_name} has changed.");
+                Console.WriteLine($"The criticality for {app.application_name} is no longer {appDetail.application[0].business_criticality} it is {app.criticality}.");
                 return true;
             }
 
             if (appDetail.application[0].business_owner_email != app.business_owner_email)
             {
-                Console.WriteLine($"The business_owner_email for {app.application_name} is no longer {appDetail.application[0].business_owner_email}.");
+                Console.WriteLine($"The business_owner_email for {app.application_name} is no longer {appDetail.application[0].business_owner_email} it is {app.business_owner_email}.");
                 return true;
             }
 
             if (appDetail.application[0].business_owner != app.business_owner)
             {
-                Console.WriteLine($"The business_owner for {app.application_name} is no longer {appDetail.application[0].business_owner}.");
+                Console.WriteLine($"The business_owner for {app.application_name} is no longer {appDetail.application[0].business_owner} it is {app.business_owner}.");
                 return true;
             }
             return false;
@@ -262,9 +281,22 @@ namespace VeracodeDSC
 
         public bool IsPolicyScanInProgress(ApplicationProfile app)
         {
-            var latestBuild = _veracodeRepository.GetLatestcan(app.id);
-            return latestBuild.build.analysis_unit[0].status != BuildStatusType.PreScanSubmitted || latestBuild.build.analysis_unit[0].status != BuildStatusType.ScanInProcess;
-        }
+            try
+            {
+                var latestBuild = _veracodeRepository.GetLatestcan(app.id);
+                if (latestBuild == null)
+                    return false;
+
+                return latestBuild.build.analysis_unit[0].status != BuildStatusType.PreScanSubmitted || latestBuild.build.analysis_unit[0].status != BuildStatusType.ScanInProcess;
+
+            } catch (Exception e)
+            {
+                if (e.Message.ToLower().Contains("could not find"))
+                    return false;
+
+                throw e;
+            }
+         }
 
         public bool IsUserAssignedToTeam(User user, ApplicationProfile app)
         {
@@ -276,7 +308,7 @@ namespace VeracodeDSC
             _veracodeRepository.StartPrescan(app_id);
         }
 
-        public void StartScan(string app_id, string modules, string? scan_name)
+        public void StartScan(string app_id, string modules)
         {
             _veracodeRepository.StartScan(app_id, modules);
         }
@@ -299,7 +331,6 @@ namespace VeracodeDSC
         {
             var retrievedPolicy = _veracodeRepository.GetPolicies()
                 .SingleOrDefault(x => x.name == app.application_name);
-            retrievedPolicy.description = policy.description;
             retrievedPolicy.sca_blacklist_grace_period = policy.sca_blacklist_grace_period;
             retrievedPolicy.score_grace_period = policy.score_grace_period;
             retrievedPolicy.sev0_grace_period = policy.sev0_grace_period;
@@ -311,6 +342,7 @@ namespace VeracodeDSC
             retrievedPolicy.custom_severities = policy.custom_severities;
             retrievedPolicy.finding_rules = policy.finding_rules;
             retrievedPolicy.scan_frequency_rules = policy.scan_frequency_rules;
+            retrievedPolicy.created = DateTime.Now;
             _veracodeRepository.UpdatePolicy(retrievedPolicy, retrievedPolicy.guid);
         }
 

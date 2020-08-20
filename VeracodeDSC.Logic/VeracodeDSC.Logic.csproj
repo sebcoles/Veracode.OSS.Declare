@@ -6,10 +6,11 @@
 
   <ItemGroup>
     <None Remove="DscLogic.cs~RFfbcd122.TMP" />
+    <None Remove="VeracodeService.cs~RF119bbb01.TMP" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.15.214705" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.19.104406" />
   </ItemGroup>
 
   <ItemGroup>

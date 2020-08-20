@@ -14,31 +14,31 @@ namespace VeracodeDSC.Shared
             {
                 case "administrator":
                     return Roles.Administrator;
-                case "Creator":
+                case "creator":
                     return Roles.Creator;
-                case "Executive":
+                case "executive":
                     return Roles.Executive;
-                case "MitigationApprover":
+                case "mitigationapprover":
                     return Roles.MitigationApprover;
-                case "PolicyAdministrator":
+                case "policyadministrator":
                     return Roles.PolicyAdministrator;
-                case "Reviewer":
+                case "reviewer":
                     return Roles.Reviewer;
-                case "SecurityLead":
+                case "securitylead":
                     return Roles.SecurityLead;
-                case "Submitter":
+                case "submitter":
                     return Roles.Submitter;
-                case "SecurityInsights":
+                case "securityinsights":
                     return Roles.SecurityInsights;
-                case "Elearning":
+                case "elearning":
                     return Roles.Elearning;
-                case "ManualScan":
+                case "manualscan":
                     return Roles.ManualScan;
-                case "DynamicScan":
+                case "dynamicscan":
                     return Roles.DynamicScan;
-                case "StaticScan":
+                case "staticscan":
                     return Roles.StaticScan;
-                case "AnyScan":
+                case "anyscan":
                     return Roles.AnyScan;
                 default:
                     throw new ArgumentOutOfRangeException();

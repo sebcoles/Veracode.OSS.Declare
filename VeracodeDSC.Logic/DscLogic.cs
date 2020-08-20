@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VeracodeDSC.Shared;
+using VeracodeService;
 using VeracodeService.Models;
 
 namespace VeracodeDSC.Logic
@@ -14,15 +16,17 @@ namespace VeracodeDSC.Logic
         void MakeItSoUser(User user, ApplicationProfile app);
         void MakeItSoTeam(ApplicationProfile app);
         bool ConformConfiguration(ApplicationProfile app, Binary[] binaries, Module[] configModules, bool isTest);
-        void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules, string? scan_name);
+        void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules);
     }
     public class DscLogic : IDscLogic
     {
         private IVeracodeService _veracodeService;
+        private IVeracodeRepository _veracodeRepository;
 
-        public DscLogic(IVeracodeService veracodeService)
+        public DscLogic(IVeracodeService veracodeService, IVeracodeRepository veracodeRepository)
         {
             _veracodeService = veracodeService;
+            _veracodeRepository = veracodeRepository;
         }
         public void MakeItSoApp(ApplicationProfile app)
         {
@@ -110,7 +114,7 @@ namespace VeracodeDSC.Logic
                 Console.WriteLine($"User {user.email_address} does not exist, adding configuration.");
                 try
                 {
-                    _veracodeService.CreateUser(user);
+                    _veracodeService.CreateUser(user, app);
                     Console.WriteLine($"User {user.email_address} created succesfully.");
                 }
                 catch (Exception e)
@@ -170,6 +174,11 @@ namespace VeracodeDSC.Logic
                     Console.WriteLine($"User {user.email_address} is not assigned to team {app.application_name}, updating configuration.");
                     try
                     {
+                        if(string.IsNullOrEmpty(user.teams))
+                            user.teams = $"{app.application_name}";
+                        else
+                            user.teams = $",{app.application_name}";
+
                         _veracodeService.UpdateUser(user);
                         Console.WriteLine($"User {user.email_address} assigned to team {app.application_name} succesfully.");
                     }
@@ -190,20 +199,40 @@ namespace VeracodeDSC.Logic
         {
             try
             {
+                if (!_veracodeService.DoesAppExist(app))
+                    throw new Exception($"Application Profile {app.application_name} does not exist, uou need to run -configure first.");
+
+                var app_id = _veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id;
+                app.id = $"{app_id}";
+
                 if (!_veracodeService.IsPolicyScanInProgress(app))
                 {
                     var scan_id = _veracodeService.CreateScan(app);
                     Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading binaries");
                     UploadFiles(app, scan_id, binaries);
                     RunPreScan(app, scan_id);
-                    ConformModules(app, scan_id, configModules);
+                    var prescanModules = _veracodeService.GetModules(app.id, scan_id);
+                    var doesScanConform = DoesModuleConfigConform(scan_id, configModules, prescanModules);
 
-                    if(isTest)
+                    if (isTest)                    
+                        Console.WriteLine($"Test Finished. Deleting Build Id {scan_id}.");
+
+                    if (doesScanConform)                    
+                        Console.WriteLine($"Configuration conforms.");
+                    else
+                        Console.WriteLine($"Scan does not conform. Deleting Build Id {scan_id}.");
+
+
+                    if (isTest || !doesScanConform)
                         _veracodeService.DeleteScan(app.id);
-                } else
+
+                    return doesScanConform;
+                }
+                else
                 {
                     Console.WriteLine($"Policy scan for {app.application_name} already in progress.");
                     Console.WriteLine($"This must be cancelled or completed before this job can be continued.");
+                    return false;
                 }
             }
             catch (Exception e)
@@ -211,26 +240,40 @@ namespace VeracodeDSC.Logic
                 Console.WriteLine($"{e.Message}.");
                 return false;
             }
-            Console.WriteLine($"Configuration conforms.");
-            return true;
         }
 
-        public void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules, string? scan_name)
+        public void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules)
         {          
             try
             {
-                ConformConfiguration(app, binaries, configModules, false);
-                RunScan(app, 
-                    string.Join(",", configModules
-                    .Select(y => y.module_id).ToArray()),
-                    scan_name);
+                var app_id = _veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id;
+                
+                if(!ConformConfiguration(app, binaries, configModules, false))
+                {
+                    Console.WriteLine("Config does not conform, cancelling scan.");
+                    return;
+                }               
+
+                var scan_id = _veracodeRepository.GetLatestcan($"{app_id}").build_id;
+                var entry_points = configModules
+                    .Where(x => x.entry_point)
+                    .Select(y => y.module_name)
+                    .ToArray();
+
+                var modulesToScan = _veracodeService.GetModules(app.id, $"{scan_id}")
+                    .Where(x => entry_points.Contains(x.module_name))
+                    .Select(y => y.module_id)
+                    .ToArray();
+
+                var moduleList = string.Join(",", modulesToScan);
+
+                RunScan(app, $"{scan_id}", moduleList);
+                Console.WriteLine($"Deployment complete.");               
             }
             catch (Exception e)
             {
                 Console.WriteLine($"{e.Message}.");
-                return;
             }
-            Console.WriteLine($"Deployment complete.");
         }
 
         public void UploadFiles(ApplicationProfile app, string scan_id, Binary[] binaries)
@@ -238,25 +281,31 @@ namespace VeracodeDSC.Logic
             var tasks = new Task[binaries.Length];
             for (var i = 0; i < tasks.Length; i++)
             {
-                tasks[i] = new Task(() =>
-                {
-                    Console.WriteLine($"Uploading {binaries[i]} to scan {scan_id}.");
-                    _veracodeService.AddBinaryToScan(app.id, binaries[i].location);
-                    Console.WriteLine($"Upload of {binaries[i]} complete.");
-                });
+                var binary = binaries[i];
+                tasks[i] = new Task(() => UploadTask(binary, app.id, scan_id));
             }
+
+            foreach (var task in tasks)
+                task.Start();
+
             Task.WaitAll(tasks);
         }
-        public void RunScan(ApplicationProfile app, string scan_id, string? scan_name)
-        {
-            _veracodeService.StartScan(app.id, scan_id, scan_name);
 
+        private void UploadTask(Binary binary, string app_id, string scan_id)
+        {
+            Console.WriteLine($"Uploading {binary.location} to scan {scan_id}.");
+            _veracodeService.AddBinaryToScan(app_id, binary.location);
+            Console.WriteLine($"Upload of {binary.location} complete.");
+        }
+        public void RunScan(ApplicationProfile app, string scan_id, string modules)
+        {
+            _veracodeService.StartScan(app.id, modules);
             var scanStatus = BuildStatusType.ScanInProcess;
             while (scanStatus == BuildStatusType.ScanInProcess)
             {
                 Console.WriteLine($"Scan {scan_id} is still running.");
                 Thread.Sleep(60000);
-                scanStatus = _veracodeService.GetScanStatus(app.id, scan_id);
+                scanStatus = _veracodeService.GetScanStatus(app.id, $"{scan_id}");
             }
 
             if (scanStatus == BuildStatusType.ScanErrors)            
@@ -273,7 +322,7 @@ namespace VeracodeDSC.Logic
             while (scanStatus == BuildStatusType.PreScanSubmitted)
             {
                 Console.WriteLine($"Pre scan {newScan} is still running.");
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 scanStatus = _veracodeService.GetScanStatus(app.id, newScan);
             }
 
@@ -283,49 +332,53 @@ namespace VeracodeDSC.Logic
             Console.WriteLine($"Pre scan complete for {newScan}.");
         }
 
-        public void ConformModules(ApplicationProfile app, string newScan, Module[] configModules)
+        public bool DoesModuleConfigConform(string newScan, Module[] configModules, Module[] prescanModules)
         {
-            var modules = _veracodeService.GetModules(app.id, newScan);
-            var missingFromConfig = modules.Except(configModules);
-            var missingFromPrescan = configModules.Except(modules);
+            var missingFromConfig = prescanModules
+                .Where(x => configModules
+                .All(y => y.module_name != x.module_name)).ToArray();
 
-            var invalidEntryPoints = configModules.Where(x => x.is_entry_point 
-                && modules.Any(y => y.module_id == x.module_id && !y.can_be_entry_point));
+            var missingFromPrescan = configModules
+                .Where(x => prescanModules
+                .All(y => y.module_name != x.module_name)).ToArray();
 
-            if(invalidEntryPoints.Count() > 0)
+            if (missingFromConfig.Count() > 0)
             {
-                foreach (var mod in invalidEntryPoints)
-                {
-                    Console.WriteLine($"Module module_id={mod.module_id}, " +
-                                      $"module_name={mod.module_name} " +
-                                      $"cannot be selected as an entry point. " +
-                                      $"Please set entry_poiny to false or resolve issue.");
+                Console.WriteLine($"There are {missingFromConfig.Count()} modules from prescan that do not match the config.");
+                foreach (var mod in missingFromConfig)                
                     foreach (var message in mod.messages)
-                        Console.WriteLine(message);
+                        Console.WriteLine($"{mod.module_name}:{message}");
+
+                Console.WriteLine($"Please include and complete the below configuration and add to your .json file");
+                var messages = new List<string>();
+                foreach (var mod in missingFromConfig)
+                {
+                    var module_selection = mod.can_be_entry_point ? ",\"entry_point\":\"true\"" : "";
+                    messages.Add($"{{ " +
+                        $"\"module_id\":\"{mod.module_id}\", " +
+                        $"\"module_name\":\"{mod.module_name}\" " +
+                        $"{module_selection}" +
+                        $"}}");
                 }
-                _veracodeService.DeleteScan(newScan);
-                throw new Exception($"Module selection configuration was incorrect for {newScan}.");
+                Console.WriteLine("\"modules\":[\n" + string.Join(",\n", messages) + "\n]");
+            }
+
+            if (missingFromPrescan.Count() > 0)
+            {
+                Console.WriteLine($"There are {missingFromPrescan.Count()} modules that are configured but are not in the prescan results.");
+                Console.WriteLine($"Thes modules need removed or resolved before a scan can continue.");
+                foreach (var mod in missingFromPrescan)
+                    Console.WriteLine($"{mod.module_name}");
             }
 
             if (missingFromConfig.Count() > 0 || missingFromPrescan.Count() > 0)
             {
-                if(missingFromConfig.Count() > 0)
-                    foreach(var mod in missingFromConfig)
-                        Console.WriteLine($"Module module_id={mod.module_id}, " +
-                            $"module_name={mod.module_name}, " +
-                            $"can_be_entry_point={mod.can_be_entry_point} was missing from the configuration.");
-
-                if (missingFromPrescan.Count() > 0)
-                    foreach (var mod in missingFromPrescan)
-                        Console.WriteLine($"Module module_id={mod.module_id}, " +
-                            $"module_name={mod.module_name}, " +
-                            $"can_be_entry_point={mod.can_be_entry_point} was missing from the pre scan results.");
-
-                _veracodeService.DeleteScan(newScan);
-                throw new Exception($"Module selection configuration was incorrect for {newScan}.");
+                Console.WriteLine($"Module selection configuration was incorrect for {newScan}.");
+                return false;
             }
 
             Console.WriteLine($"Module selection conforms for {newScan} and the scan can commence.");
+            return true;
         }
     }
 }

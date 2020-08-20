@@ -1,10 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Integration\DscIntegrationTests.cs~RF16da54a1.TMP" />
+    <None Remove="veracode.complete.json~RF782eba3.TMP" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.7" />
@@ -19,10 +24,11 @@
     </PackageReference>
 	<PackageReference Include="NUnit" Version="3.12.0" />
 	<PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-	<PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.15.152126" />
+	<PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.19.104406" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VeracodeDSC.Logic\VeracodeDSC.Logic.csproj" />
     <ProjectReference Include="..\VeracodeDSC.Shared\VeracodeDSC.Shared.csproj" />
   </ItemGroup>
 
@@ -30,7 +36,16 @@
     <None Update="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="veracode.verademo.json">
+    <None Update="Assets\testapp1.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\testapp2.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="veracode.complete.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="veracode.incomplete.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -22,12 +22,13 @@ namespace VeracodeDSC.Shared
         public string module_id { get; set; }
         public string module_name { get; set; }
         public bool can_be_entry_point { get; set; }
-        public bool is_entry_point { get; set; }
+        public bool entry_point { get; set; }
         public List<string> messages { get; set; }
     }
 
     public class Policy
     {
+        public string name { get; set; }
         public int sca_blacklist_grace_period { get; set; }
 
         public List<CustomSeverity> custom_severities { get; set; }
@@ -49,6 +50,7 @@ namespace VeracodeDSC.Shared
         public string last_name { get; set; }
         public string email_address { get; set; }
         public string roles { get; set; }
+        public string teams { get; set; }
     }
 
     public class ApplicationProfile

@@ -1,0 +1,40 @@
+﻿{
+  "application_profiles": [
+    {
+      "application_name": "Test App",
+      "criticality": "Very High",
+      "business_owner": "seb",
+      "business_owner_email": "jam@jam.jam",
+      "binaries": [
+        {
+          "location": "Assets/testapp1.zip"
+        },
+        {
+          "location": "Assets/testapp2.zip"
+        }
+      ],
+      "modules": [],
+      "policy": {
+        "custom_severities": [],
+        "finding_rules": [],
+        "scan_frequency_rules": [],
+        "sev0_grace_period": 30,
+        "sev1_grace_period": 60,
+        "sev2_grace_period": 180,
+        "sev3_grace_period": 0,
+        "sev4_grace_period": 0,
+        "sev5_grace_period": 0,
+        "sca_blacklist_grace_period": 0,
+        "score_grace_period": 0
+      },
+      "users": [
+        {
+          "first_name": "Seb",
+          "last_name": "Coles",
+          "email_address": "jam@jam.jam",
+          "roles": "Creator, Any Scan"
+        }
+      ]
+    }
+  ]
+}

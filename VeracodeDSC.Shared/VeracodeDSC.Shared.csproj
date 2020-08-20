@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.15.214705" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.8.19.104406" />
   </ItemGroup>
 
 </Project>
