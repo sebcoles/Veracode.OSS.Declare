@@ -66,7 +66,7 @@ namespace VeracodeDSC
             foreach (var summary in results)
             {
                 var message = summary.Value ? "DOES" : "DOES NOT";
-                Console.Write($"Application {summary.Key} scan config {message} confirm.");
+                Console.Write($"Application {summary.Key} scan config {message} conforms.");
             }
             return 1;
         }
@@ -74,6 +74,11 @@ namespace VeracodeDSC
         static int Scan(ScanOptions options)
         {
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var dscLogic = _serviceProvider.GetService<IDscLogic>();
+
+            foreach (var app in jsonRepository.Apps())
+                dscLogic.MakeItSoScan(app, app.binaries.ToArray(), app.modules.ToArray());
+            
             return 1;
         }
 
@@ -87,7 +92,10 @@ namespace VeracodeDSC
                 dscLogic.MakeItSoPolicy(app, app.policy);
                 dscLogic.MakeItSoTeam(app);
                 foreach (var user in app.users)
+                {
+                    user.teams = app.application_name;
                     dscLogic.MakeItSoUser(user, app);
+                }
             }
             return 1;
         }

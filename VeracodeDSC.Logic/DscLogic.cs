@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -238,6 +239,7 @@ namespace VeracodeDSC.Logic
             catch (Exception e)
             {
                 Console.WriteLine($"{e.Message}.");
+                _veracodeService.DeleteScan(app.id);
                 return false;
             }
         }
@@ -267,6 +269,7 @@ namespace VeracodeDSC.Logic
 
                 var moduleList = string.Join(",", modulesToScan);
 
+                Console.WriteLine("Starting scan.");
                 RunScan(app, $"{scan_id}", moduleList);
                 Console.WriteLine($"Deployment complete.");               
             }
@@ -299,37 +302,69 @@ namespace VeracodeDSC.Logic
         }
         public void RunScan(ApplicationProfile app, string scan_id, string modules)
         {
+            var stopWatch = new Stopwatch();
+            TimeSpan ts;
+            string elapsedTime;
+            stopWatch.Start();
+
             _veracodeService.StartScan(app.id, modules);
             var scanStatus = BuildStatusType.ScanInProcess;
             while (scanStatus == BuildStatusType.ScanInProcess)
             {
-                Console.WriteLine($"Scan {scan_id} is still running.");
-                Thread.Sleep(60000);
+                ts = stopWatch.Elapsed;
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds,
+                    ts.Milliseconds / 10);
+                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} : Scan {scan_id} is still running and has been running for {elapsedTime}.");
+                Thread.Sleep(20000);
                 scanStatus = _veracodeService.GetScanStatus(app.id, $"{scan_id}");
             }
+
+            ts = stopWatch.Elapsed;
+            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            stopWatch.Stop();
 
             if (scanStatus == BuildStatusType.ScanErrors)            
                 throw new Exception("Scan status returned an error status.");
             
-            Console.WriteLine($"Scan complete for {scan_id}.");
+            Console.WriteLine($"Scan complete for {scan_id} and took {elapsedTime}.");
         }
 
-        public void RunPreScan(ApplicationProfile app, string newScan)
+        public void RunPreScan(ApplicationProfile app, string scan_id)
         {
+            var stopWatch = new Stopwatch();
+            TimeSpan ts;
+            string elapsedTime;
+            stopWatch.Start();
+
             _veracodeService.StartPrescan(app.id);
 
             var scanStatus = BuildStatusType.PreScanSubmitted;
             while (scanStatus == BuildStatusType.PreScanSubmitted)
             {
-                Console.WriteLine($"Pre scan {newScan} is still running.");
-                Thread.Sleep(10000);
-                scanStatus = _veracodeService.GetScanStatus(app.id, newScan);
+                ts = stopWatch.Elapsed;
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds,
+                    ts.Milliseconds / 10);
+
+                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} : Pre scan {scan_id} is still running and has been running for {elapsedTime}.");
+                Thread.Sleep(20000);
+                scanStatus = _veracodeService.GetScanStatus(app.id, scan_id);
             }
+
+            ts = stopWatch.Elapsed;
+            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            stopWatch.Stop();
+            stopWatch.Stop();
 
             if (scanStatus == BuildStatusType.PreScanFailed)
                 throw new Exception("Pre scan status returned an error status.");
 
-            Console.WriteLine($"Pre scan complete for {newScan}.");
+            Console.WriteLine($"Pre scan complete for {scan_id} and took {elapsedTime}.");
         }
 
         public bool DoesModuleConfigConform(string newScan, Module[] configModules, Module[] prescanModules)
@@ -355,7 +390,6 @@ namespace VeracodeDSC.Logic
                 {
                     var module_selection = mod.can_be_entry_point ? ",\"entry_point\":\"true\"" : "";
                     messages.Add($"{{ " +
-                        $"\"module_id\":\"{mod.module_id}\", " +
                         $"\"module_name\":\"{mod.module_name}\" " +
                         $"{module_selection}" +
                         $"}}");

@@ -287,7 +287,8 @@ namespace VeracodeDSC
                 if (latestBuild == null)
                     return false;
 
-                return latestBuild.build.analysis_unit[0].status != BuildStatusType.PreScanSubmitted || latestBuild.build.analysis_unit[0].status != BuildStatusType.ScanInProcess;
+                return latestBuild.build.analysis_unit[0].status == BuildStatusType.PreScanSubmitted 
+                    || latestBuild.build.analysis_unit[0].status == BuildStatusType.ScanInProcess;
 
             } catch (Exception e)
             {

@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Remove="Integration\DscIntegrationTests.cs~RF16da54a1.TMP" />
     <None Remove="veracode.complete.json~RF782eba3.TMP" />
+    <None Remove="veracode.complete.json~RF809047f.TMP" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DscLogic.cs~RF78974bc.TMP" />
     <None Remove="DscLogic.cs~RFfbcd122.TMP" />
     <None Remove="VeracodeService.cs~RF119bbb01.TMP" />
   </ItemGroup>
