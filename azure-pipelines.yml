@@ -1,0 +1,60 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  MajorVersion: 1
+  MinorVersion: 0
+  InitialReleaseTagNumber: 1
+  IncrementReleaseTagNumber: $[counter(variables['InitialReleaseTagNumber'], 0)]
+
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    projects: '**/*VeracodeDSC.csproj'
+    command: 'restore'
+    includeNuGetOrg: true
+
+- task: DotNetCoreCLI@2
+  inputs:
+    projects: '**/*VeracodeDSC.csproj'
+    command: 'build'
+    arguments: '--configuration $(buildConfiguration)'
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.BinariesDirectory)'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+      **/*.exe
+      **/*.dll
+      **/*.Console.runtimeconfig.json
+    TargetFolder: '$(Build.BinariesDirectory)'
+    flattenFolders: true
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/VeracodeDSC-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
+    replaceExistingArchive: true
+    includeRootFolder: false
+  
+- task: GitHubRelease@1
+  inputs:
+    gitHubConnection: 'sebcoles'
+    repositoryName: 'sebcoles/VeracodeDSC'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'userSpecifiedTag'
+    tag: 'v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber)'
+    title: 'v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber)'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
+    assets: '$(Build.ArtifactStagingDirectory)/VeracodeDSC-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
+
+
