@@ -5,28 +5,19 @@
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "jam@jam.jam",
-      "binaries": [
+      "files": [
         {
-          "location": "Assets/testapp1.zip"
-        },
-        {
-          "location": "Assets/testapp2.zip"
+          "location": "Assets/verademo.war"
         }
       ],
       "modules": [
         {
-          "module_name": "ConsoleApp1.dll",
+          "module_name": "verademo.war",
           "entry_point": "true"
         },
         {
-          "module_name": "ConsoleApp1.exe"
-        },
-        {
-          "module_name": "ConsoleApp1.dll",
+          "module_name": "JS files within verademo.war",
           "entry_point": "true"
-        },
-        {
-          "module_name": "ConsoleApp1.exe"
         }
       ],
       "policy": {
@@ -62,8 +53,22 @@
         {
           "first_name": "Seb",
           "last_name": "Coles",
-          "email_address": "jam@jam.jam",
+          "email_address": "scoles@veracode.com",
           "roles": "Creator, Any Scan"
+        }
+      ],
+      "mitigations": [
+        {
+          "flaw_id": "",
+          "cve_id": "",
+          "file_name": "",
+          "line_number": "",
+          "link": "",
+          "action": "",
+          "technique": "",
+          "specifics": "",
+          "residual_risk": "",
+          "verification": ""
         }
       ]
     }

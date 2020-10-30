@@ -5,34 +5,62 @@
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "jam@jam.jam",
-      "binaries": [
+      "files": [
         {
-          "location": "Assets/testapp1.zip"
-        },
-        {
-          "location": "Assets/testapp2.zip"
+          "location": "Assets/verademo.war"
         }
       ],
-      "modules": [],
+      "modules": [
+      ],
       "policy": {
-        "custom_severities": [],
-        "finding_rules": [],
-        "scan_frequency_rules": [],
-        "sev0_grace_period": 30,
-        "sev1_grace_period": 60,
-        "sev2_grace_period": 180,
+        "custom_severities": [
+          {
+            "cwe": 0,
+            "severity": 0
+          }
+        ],
+        "finding_rules": [
+          {
+            "scan_type": [
+              "STATIC"
+            ],
+            "type": "FAIL_ALL",
+            "value": "string"
+          }
+        ],
+        "scan_frequency_rules": [
+          {
+            "frequency": "NOT_REQUIRED",
+            "scan_type": "STATIC"
+          }
+        ],
+        "sev0_grace_period": 0,
+        "sev1_grace_period": 0,
+        "sev2_grace_period": 0,
         "sev3_grace_period": 0,
         "sev4_grace_period": 0,
-        "sev5_grace_period": 0,
-        "sca_blacklist_grace_period": 0,
-        "score_grace_period": 0
+        "sev5_grace_period": 0
       },
       "users": [
         {
           "first_name": "Seb",
           "last_name": "Coles",
-          "email_address": "jam@jam.jam",
+          "email_address": "scoles@veracode.com",
           "roles": "Creator, Any Scan"
+        }
+      ],
+      "mitigations": [
+        {
+          "flaw_id": "",
+          "cve_id": "",
+          "file_name": "",
+          "line_number": "",
+          "link": "",
+          "action": "",
+          "technique": "",
+          "specifics": "",
+          "residual_risk": "",
+          "verification": ""
         }
       ]
     }

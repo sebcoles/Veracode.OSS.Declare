@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using VeracodeService.Rest;
 
 namespace VeracodeDSC.Shared
@@ -8,7 +9,7 @@ namespace VeracodeDSC.Shared
         public List<ApplicationProfile> application_profiles { get; set; }       
     }
 
-    public class Binary
+    public class File
     {
         public string location { get; set; }
     }
@@ -55,14 +56,31 @@ namespace VeracodeDSC.Shared
 
     public class ApplicationProfile
     {
+        [JsonIgnore]
         public string id { get; set; }
         public string application_name { get; set; }
         public string criticality { get; set; }
         public string business_owner { get; set; }
         public string business_owner_email { get; set; }
-        public List<Binary> binaries { get; set; }
+        public List<File> files { get; set; }
         public List<Module> modules { get; set; }
         public Policy policy { get; set; }
         public List<User> users { get; set; }
+        public List<Mitigation> mitigations { get; set; }
+    }
+
+    public class Mitigation
+    {
+         public string flaw_id { get; set; } 
+         public string cve_id { get; set; } 
+         public string file_name { get; set; } 
+         public string line_number { get; set; } 
+         public string link { get; set; } 
+         public string action { get; set; } 
+         public string technique { get; set; } 
+         public string specifics { get; set; } 
+         public string residual_risk { get; set; } 
+         public string verification { get; set; }
+        public string tsrv => $"{technique}\\n{specifics}\\n{residual_risk}\\n{verification}";
     }
 }

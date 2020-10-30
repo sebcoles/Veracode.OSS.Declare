@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using VeracodeDSC.DataAccess.Json;
 using VeracodeDSC.Logic;
 using VeracodeDSC.Options;
@@ -38,11 +39,15 @@ namespace VeracodeDSC
             Parser.Default.ParseArguments<
                 TestOptions,
                 ScanOptions,
-                ConfigureOptions>(args)
+                ConfigureOptions,
+                EvaluateOptions,
+                MitigationOptions>(args)
                 .MapResult(
                     (TestOptions options) => Test(options),
                     (ScanOptions options) => Scan(options),
                     (ConfigureOptions options) => Configure(options),
+                    (EvaluateOptions options) => Evaluate(options),
+                    (MitigationOptions options) => Template(options),
                     errs => HandleParseError(errs));
         }
 
@@ -53,8 +58,12 @@ namespace VeracodeDSC
             var results = new List<KeyValuePair<string, bool>>();
             foreach (var app in jsonRepository.Apps())
             {
-                var doesScanConfirm = dscLogic.ConformConfiguration(app,
-                        app.binaries.ToArray(),
+                bool doesScanConfirm;
+                if (options.LastScan)                
+                    doesScanConfirm = dscLogic.ConformToPreviousScan(app, app.modules.ToArray());
+                else
+                    doesScanConfirm = dscLogic.ConformConfiguration(app,
+                        app.files.ToArray(),
                         app.modules.ToArray(), true);
 
                 results.Add(new KeyValuePair<string, bool>(
@@ -77,8 +86,19 @@ namespace VeracodeDSC
             var dscLogic = _serviceProvider.GetService<IDscLogic>();
 
             foreach (var app in jsonRepository.Apps())
-                dscLogic.MakeItSoScan(app, app.binaries.ToArray(), app.modules.ToArray());
+                dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
             
+            return 1;
+        }
+
+        static int Evaluate(EvaluateOptions options)
+        {
+            var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var dscLogic = _serviceProvider.GetService<IDscLogic>();
+
+            foreach (var app in jsonRepository.Apps())            
+                dscLogic.GetLatestStatus(app);            
+
             return 1;
         }
 
@@ -96,7 +116,19 @@ namespace VeracodeDSC
                     user.teams = app.application_name;
                     dscLogic.MakeItSoUser(user, app);
                 }
+                dscLogic.MakeItSoMitigations(app);
             }
+            return 1;
+        }
+
+        static int Template(MitigationOptions options)
+        {
+            var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var dscLogic = _serviceProvider.GetService<IDscLogic>();
+
+            foreach (var app in jsonRepository.Apps())                
+                dscLogic.MakeMitigationTemplates(app, options.PolicyOnly);
+       
             return 1;
         }
 

@@ -29,7 +29,7 @@ namespace VeracodeDSC
         BuildStatusType GetScanStatus(string app_id, string scan);
         bool CancelScan(string scan_id, string app_id);
         bool IsPolicyScanInProgress(ApplicationProfile app);
-        void AddBinaryToScan(string app_id, string filepath);
+        void AddFileToScan(string app_id, string filepath);
         void StartPrescan(string app_id);
         Module[] GetModules(string app_id, string scan_id);
         void StartScan(string app_id, string modules);
@@ -43,7 +43,7 @@ namespace VeracodeDSC
         {
             _veracodeRepository = veracodeRepository;
         }
-        public void AddBinaryToScan(string app_id, string filepath)
+        public void AddFileToScan(string app_id, string filepath)
         {
             _veracodeRepository.UploadFileForPrescan(app_id, filepath);
         }
@@ -195,11 +195,14 @@ namespace VeracodeDSC
         public User[] GetUserEmailsOnTeam(ApplicationProfile app)
         {
             var teamlite = _veracodeRepository.GetTeams().Single(x => x.team_name == $"{app.application_name}");
-            return _veracodeRepository.GetTeamInfo(teamlite.team_id, true, false)
-                .user.Select(x => new User
-            {
-                    email_address = x.email_address
-            }).ToArray();
+            var teaminfo = _veracodeRepository.GetTeamInfo(teamlite.team_id, true, false);
+            if(teaminfo.user != null && teaminfo.user.Any())
+                return teaminfo.user.Select(x => new User
+                {
+                        email_address = x.email_address
+                }).ToArray();
+
+            return new User[0];
         }
 
         public bool HasAppChanged(ApplicationProfile app)
@@ -283,7 +286,7 @@ namespace VeracodeDSC
         {
             try
             {
-                var latestBuild = _veracodeRepository.GetLatestcan(app.id);
+                var latestBuild = _veracodeRepository.GetLatestScan(app.id);
                 if (latestBuild == null)
                     return false;
 

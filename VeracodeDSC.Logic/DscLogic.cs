@@ -16,8 +16,12 @@ namespace VeracodeDSC.Logic
         void MakeItSoPolicy(ApplicationProfile app, Policy policy);
         void MakeItSoUser(User user, ApplicationProfile app);
         void MakeItSoTeam(ApplicationProfile app);
-        bool ConformConfiguration(ApplicationProfile app, Binary[] binaries, Module[] configModules, bool isTest);
-        void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules);
+        bool ConformConfiguration(ApplicationProfile app, File[] files, Module[] configModules, bool isTest);
+        void MakeItSoScan(ApplicationProfile app, File[] files, Module[] configModules);
+        void MakeItSoMitigations(ApplicationProfile app);
+        void GetLatestStatus(ApplicationProfile app);
+        void MakeMitigationTemplates(ApplicationProfile app, bool policy_only);
+        bool ConformToPreviousScan(ApplicationProfile app, Module[] configModules);
     }
     public class DscLogic : IDscLogic
     {
@@ -28,6 +32,47 @@ namespace VeracodeDSC.Logic
         {
             _veracodeService = veracodeService;
             _veracodeRepository = veracodeRepository;
+        }
+
+        public void MakeItSoMitigations(ApplicationProfile app)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var latest_build = _veracodeRepository.GetLatestScan(app.id);
+            if (latest_build == null)
+            {
+                Console.WriteLine($"{app.application_name} has no completed scans, cannot apply mitigations.");
+                return;
+            }
+
+            var latest_build_id = $"{latest_build.build.build_id}";
+
+            if (app.mitigations.Any())
+            {
+                Console.WriteLine($"Checking if the mitigations for Application Profile {app.application_name} have already been applied.");
+                var flaw_ids = app.mitigations.Select(x => x.flaw_id).ToArray();
+
+                foreach (var flaw_id in flaw_ids)
+                {
+                    if (!Int32.TryParse(flaw_id, out int result))
+                    {
+                        Console.WriteLine($"The flaw_id of {flaw_id} is invalid, skipping.");
+                        continue;
+                    }
+
+                    var mitigations = _veracodeRepository.GetMitigationForFlaw(latest_build_id, flaw_id)[0].mitigation_action;
+                    var config_mitigation = app.mitigations.SingleOrDefault(x => x.flaw_id == flaw_id);
+                    if (mitigations.Any(x => x.comment == config_mitigation.action))
+                    {
+                        Console.WriteLine($"Mitigation for Flaw ID {flaw_id} has already been applied for Application Profile {app.application_name}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Applying mitigation for Flaw ID {flaw_id} for Application Profile {app.application_name}.");
+                        _veracodeRepository.UpdateMitigations(latest_build_id, config_mitigation.action, config_mitigation.tsrv, flaw_id);
+                        _veracodeRepository.UpdateMitigations(latest_build_id, "accepted", "Mitigation applied via DSC", flaw_id);
+                    }
+                }
+            }
         }
         public void MakeItSoApp(ApplicationProfile app)
         {
@@ -175,7 +220,7 @@ namespace VeracodeDSC.Logic
                     Console.WriteLine($"User {user.email_address} is not assigned to team {app.application_name}, updating configuration.");
                     try
                     {
-                        if(string.IsNullOrEmpty(user.teams))
+                        if (string.IsNullOrEmpty(user.teams))
                             user.teams = $"{app.application_name}";
                         else
                             user.teams = $",{app.application_name}";
@@ -196,7 +241,7 @@ namespace VeracodeDSC.Logic
             }
         }
 
-        public bool ConformConfiguration(ApplicationProfile app, Binary[] binaries, Module[] configModules, bool isTest)
+        public bool ConformConfiguration(ApplicationProfile app, File[] files, Module[] configModules, bool isTest)
         {
             try
             {
@@ -209,16 +254,16 @@ namespace VeracodeDSC.Logic
                 if (!_veracodeService.IsPolicyScanInProgress(app))
                 {
                     var scan_id = _veracodeService.CreateScan(app);
-                    Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading binaries");
-                    UploadFiles(app, scan_id, binaries);
+                    Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading files");
+                    UploadFiles(app, scan_id, files);
                     RunPreScan(app, scan_id);
                     var prescanModules = _veracodeService.GetModules(app.id, scan_id);
                     var doesScanConform = DoesModuleConfigConform(scan_id, configModules, prescanModules);
 
-                    if (isTest)                    
+                    if (isTest)
                         Console.WriteLine($"Test Finished. Deleting Build Id {scan_id}.");
 
-                    if (doesScanConform)                    
+                    if (doesScanConform)
                         Console.WriteLine($"Configuration conforms.");
                     else
                         Console.WriteLine($"Scan does not conform. Deleting Build Id {scan_id}.");
@@ -244,19 +289,19 @@ namespace VeracodeDSC.Logic
             }
         }
 
-        public void MakeItSoScan(ApplicationProfile app, Binary[] binaries, Module[] configModules)
-        {          
+        public void MakeItSoScan(ApplicationProfile app, File[] files, Module[] configModules)
+        {
             try
             {
                 var app_id = _veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id;
-                
-                if(!ConformConfiguration(app, binaries, configModules, false))
+
+                if (!ConformConfiguration(app, files, configModules, false))
                 {
                     Console.WriteLine("Config does not conform, cancelling scan.");
                     return;
-                }               
+                }
 
-                var scan_id = _veracodeRepository.GetLatestcan($"{app_id}").build_id;
+                var scan_id = _veracodeRepository.GetLatestScan($"{app_id}").build_id;
                 var entry_points = configModules
                     .Where(x => x.entry_point)
                     .Select(y => y.module_name)
@@ -271,7 +316,7 @@ namespace VeracodeDSC.Logic
 
                 Console.WriteLine("Starting scan.");
                 RunScan(app, $"{scan_id}", moduleList);
-                Console.WriteLine($"Deployment complete.");               
+                Console.WriteLine($"Deployment complete.");
             }
             catch (Exception e)
             {
@@ -279,12 +324,12 @@ namespace VeracodeDSC.Logic
             }
         }
 
-        public void UploadFiles(ApplicationProfile app, string scan_id, Binary[] binaries)
+        public void UploadFiles(ApplicationProfile app, string scan_id, File[] files)
         {
-            var tasks = new Task[binaries.Length];
+            var tasks = new Task[files.Length];
             for (var i = 0; i < tasks.Length; i++)
             {
-                var binary = binaries[i];
+                var binary = files[i];
                 tasks[i] = new Task(() => UploadTask(binary, app.id, scan_id));
             }
 
@@ -294,10 +339,10 @@ namespace VeracodeDSC.Logic
             Task.WaitAll(tasks);
         }
 
-        private void UploadTask(Binary binary, string app_id, string scan_id)
+        private void UploadTask(File binary, string app_id, string scan_id)
         {
             Console.WriteLine($"Uploading {binary.location} to scan {scan_id}.");
-            _veracodeService.AddBinaryToScan(app_id, binary.location);
+            _veracodeService.AddFileToScan(app_id, binary.location);
             Console.WriteLine($"Upload of {binary.location} complete.");
         }
         public void RunScan(ApplicationProfile app, string scan_id, string modules)
@@ -326,9 +371,9 @@ namespace VeracodeDSC.Logic
                 ts.Milliseconds / 10);
             stopWatch.Stop();
 
-            if (scanStatus == BuildStatusType.ScanErrors)            
+            if (scanStatus == BuildStatusType.ScanErrors)
                 throw new Exception("Scan status returned an error status.");
-            
+
             Console.WriteLine($"Scan complete for {scan_id} and took {elapsedTime}.");
         }
 
@@ -380,7 +425,7 @@ namespace VeracodeDSC.Logic
             if (missingFromConfig.Count() > 0)
             {
                 Console.WriteLine($"There are {missingFromConfig.Count()} modules from prescan that do not match the config.");
-                foreach (var mod in missingFromConfig)                
+                foreach (var mod in missingFromConfig)
                     foreach (var message in mod.messages)
                         Console.WriteLine($"{mod.module_name}:{message}");
 
@@ -413,6 +458,80 @@ namespace VeracodeDSC.Logic
 
             Console.WriteLine($"Module selection conforms for {newScan} and the scan can commence.");
             return true;
+        }
+
+        public void GetLatestStatus(ApplicationProfile app)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var sandboxes = _veracodeRepository.GetSandboxesForApp(app.id);
+            var latest_policy_build = _veracodeRepository.GetLatestScan(app.id).build;
+
+            var scanStatus = _veracodeService.GetScanStatus(app.id, $"{latest_policy_build.build_id}");
+            Console.WriteLine($"[{app.application_name}][Policy][Scan Status] {VeracodeEnumConverter.Convert(scanStatus)}");
+
+            var compliance = VeracodeEnumConverter.Convert(latest_policy_build.policy_compliance_status);
+            Console.WriteLine($"[{app.application_name}][Policy][Compliance Status] {compliance}");
+
+            foreach (var sandbox in sandboxes)
+            {
+                var latest_sandbox_build = _veracodeRepository.GetLatestScanSandbox(app.id, $"{sandbox.sandbox_id}");
+                if (latest_sandbox_build == null)
+                {
+                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] There are no scans!");
+                }
+                else
+                {
+                    var latest_sandbox_build_id = $"{latest_sandbox_build.build.build_id}";
+                    var scanSandboxStatus = _veracodeService.GetScanStatus(app.id, latest_sandbox_build_id);
+                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] {VeracodeEnumConverter.Convert(scanSandboxStatus)}");
+
+                    var sandboxCompliance = VeracodeEnumConverter.Convert(latest_sandbox_build.build.policy_compliance_status);
+                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Compliance Status] {VeracodeEnumConverter.Convert(latest_sandbox_build.build.policy_compliance_status)}");
+                }
+            }
+        }
+
+        public void MakeMitigationTemplates(ApplicationProfile app, bool policy_only)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var latest_build = _veracodeRepository.GetLatestScan(app.id);
+            if (latest_build == null)
+            {
+                Console.WriteLine($"{app.application_name} has no completed scans, no mitigations to create templates for.");
+                return;
+            }
+
+            var latest_build_id = $"{latest_build.build.build_id}";
+            var flaws = _veracodeRepository.GetFlaws(latest_build_id);
+            var messages = new List<string>();
+
+            if (policy_only)
+                flaws = flaws.Where(x => x.affects_policy_compliance).ToArray();
+
+            foreach (var flaw in flaws)            
+                messages.Add($"{{ " +
+                             $"\"flaw_id\":\"{flaw.issueid}\" " +
+                             $"\"cwe_id\":\"{flaw.cweid}\" " +
+                             $"\"file_name\":\"{flaw.sourcefile}\" " +
+                             $"\"line_number\":\"{flaw.line}\" " +
+                             $"\"link\":\"__ADD_A_REPOSITORY_LINK__\" " +
+                             $"\"action\":\"fp || appdesign || osenv || netenv\" " +
+                             $"\"technique\":\"__ENTER_TECHNIQUES__\" " +
+                             $"\"specifics\":\"__ENTER_SPECIFICS__\" " +
+                             $"\"residual_risk\":\"__ENTER_RESIDIUAL_RISK__\" " +
+                             $"\"verification\":\"__ENTER_VERIFICATION__\" " +
+                             $"}}");
+            
+            Console.WriteLine("\"mitigations\":[\n" + string.Join(",\n", messages) + "\n]");
+        }
+
+
+        public bool ConformToPreviousScan(ApplicationProfile app, Module[] configModules)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var latest_build = _veracodeRepository.GetLatestScan(app.id);
+            var prescanModules = _veracodeService.GetModules(app.id, $"{latest_build.build.build_id}");
+            return DoesModuleConfigConform($"{latest_build.build.build_id}", configModules, prescanModules);
         }
     }
 }
