@@ -79,8 +79,8 @@ namespace VeracodeDSC.Shared
          public string action { get; set; } 
          public string technique { get; set; } 
          public string specifics { get; set; } 
-         public string residual_risk { get; set; } 
+         public string remaining_risk { get; set; } 
          public string verification { get; set; }
-        public string tsrv => $"{technique}\\n{specifics}\\n{residual_risk}\\n{verification}";
+        public string tsrv => $"\rTechnique : {technique}\r\nSpecifics : {specifics}\r\nRemaining Risk : {remaining_risk}\r\nVerification : {verification}";
     }
 }

@@ -59,9 +59,11 @@ namespace VeracodeDSC.Logic
                         continue;
                     }
 
-                    var mitigations = _veracodeRepository.GetMitigationForFlaw(latest_build_id, flaw_id)[0].mitigation_action;
+                    var mitigations = _veracodeRepository.GetMitigationForFlaw(latest_build_id, flaw_id);
                     var config_mitigation = app.mitigations.SingleOrDefault(x => x.flaw_id == flaw_id);
-                    if (mitigations.Any(x => x.comment == config_mitigation.action))
+                    if (mitigations.Any() 
+                        && mitigations[0].mitigation_action.Any() 
+                        && mitigations[0].mitigation_action.Any(x => x.comment == config_mitigation.action))
                     {
                         Console.WriteLine($"Mitigation for Flaw ID {flaw_id} has already been applied for Application Profile {app.application_name}.");
                     }
@@ -510,15 +512,15 @@ namespace VeracodeDSC.Logic
 
             foreach (var flaw in flaws)            
                 messages.Add($"{{ " +
-                             $"\"flaw_id\":\"{flaw.issueid}\" " +
-                             $"\"cwe_id\":\"{flaw.cweid}\" " +
-                             $"\"file_name\":\"{flaw.sourcefile}\" " +
-                             $"\"line_number\":\"{flaw.line}\" " +
-                             $"\"link\":\"__ADD_A_REPOSITORY_LINK__\" " +
-                             $"\"action\":\"fp || appdesign || osenv || netenv\" " +
-                             $"\"technique\":\"__ENTER_TECHNIQUES__\" " +
-                             $"\"specifics\":\"__ENTER_SPECIFICS__\" " +
-                             $"\"residual_risk\":\"__ENTER_RESIDIUAL_RISK__\" " +
+                             $"\"flaw_id\":\"{flaw.issueid}\"," +
+                             $"\"cwe_id\":\"{flaw.cweid}\"," +
+                             $"\"file_name\":\"{flaw.sourcefile}\"," +
+                             $"\"line_number\":\"{flaw.line}\"," +
+                             $"\"link\":\"__ADD_A_REPOSITORY_LINK__\"," +
+                             $"\"action\":\"fp || appdesign || osenv || netenv\"," +
+                             $"\"technique\":\"__ENTER_TECHNIQUES__\"," +
+                             $"\"specifics\":\"__ENTER_SPECIFICS__\"," +
+                             $"\"remaining_risk\":\"__ENTER_REMAINING_RISK__\"," +
                              $"\"verification\":\"__ENTER_VERIFICATION__\" " +
                              $"}}");
             

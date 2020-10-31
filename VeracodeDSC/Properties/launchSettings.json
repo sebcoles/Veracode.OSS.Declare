@@ -2,7 +2,7 @@
   "profiles": {
     "VeracodeDSC": {
       "commandName": "Project",
-      "commandLineArgs": "mitigation --policyonly -f .\\veracode.complete.json"
+      "commandLineArgs": "configure -f .\\veracode.complete.json"
     }
   }
 }
