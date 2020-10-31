@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VeracodeDSC.Shared;
-using VeracodeService;
-using VeracodeService.Models;
-using VeracodeService.Rest;
+using Veracode.OSS.Declare.Shared;
+using Veracode.OSS.Wrapper;
+using Veracode.OSS.Wrapper.Models;
+using Veracode.OSS.Wrapper.Rest;
 
-namespace VeracodeDSC
+namespace Veracode.OSS.Declare.Logic
 {
     public interface IVeracodeService
     {
@@ -74,21 +74,21 @@ namespace VeracodeDSC
         {
             _veracodeRepository.CreatePolicy(new PolicyVersion
             {
-               name = $"{app.application_name}",
-               description = $"Custom policy for application {app.application_name}",
-               sca_blacklist_grace_period = policy.sca_blacklist_grace_period,
-               score_grace_period = policy.score_grace_period,
-               sev0_grace_period = policy.sev0_grace_period,
-               sev1_grace_period = policy.sev1_grace_period,
-               sev2_grace_period = policy.sev2_grace_period,
-               sev3_grace_period = policy.sev3_grace_period,
-               sev4_grace_period = policy.sev4_grace_period,
-               sev5_grace_period = policy.sev5_grace_period,
-               type = "CUSTOMER",
-               vendor_policy = false,
-               scan_frequency_rules = policy.scan_frequency_rules,
-               finding_rules = policy.finding_rules,
-               created = DateTime.Now
+                name = $"{app.application_name}",
+                description = $"Custom policy for application {app.application_name}",
+                sca_blacklist_grace_period = policy.sca_blacklist_grace_period,
+                score_grace_period = policy.score_grace_period,
+                sev0_grace_period = policy.sev0_grace_period,
+                sev1_grace_period = policy.sev1_grace_period,
+                sev2_grace_period = policy.sev2_grace_period,
+                sev3_grace_period = policy.sev3_grace_period,
+                sev4_grace_period = policy.sev4_grace_period,
+                sev5_grace_period = policy.sev5_grace_period,
+                type = "CUSTOMER",
+                vendor_policy = false,
+                scan_frequency_rules = policy.scan_frequency_rules,
+                finding_rules = policy.finding_rules,
+                created = DateTime.Now
             });
             return _veracodeRepository
                 .GetPolicies()
@@ -196,10 +196,10 @@ namespace VeracodeDSC
         {
             var teamlite = _veracodeRepository.GetTeams().Single(x => x.team_name == $"{app.application_name}");
             var teaminfo = _veracodeRepository.GetTeamInfo(teamlite.team_id, true, false);
-            if(teaminfo.user != null && teaminfo.user.Any())
+            if (teaminfo.user != null && teaminfo.user.Any())
                 return teaminfo.user.Select(x => new User
                 {
-                        email_address = x.email_address
+                    email_address = x.email_address
                 }).ToArray();
 
             return new User[0];
@@ -218,7 +218,7 @@ namespace VeracodeDSC
 
             var appDetail = _veracodeRepository.GetAppDetail($"{retrievedApp.app_id}");
 
-            if(appDetail.application[0].business_criticality != VeracodeEnumConverter.Convert(app.criticality))
+            if (appDetail.application[0].business_criticality != VeracodeEnumConverter.Convert(app.criticality))
             {
                 Console.WriteLine($"The criticality for {app.application_name} is no longer {appDetail.application[0].business_criticality} it is {app.criticality}.");
                 return true;
@@ -242,7 +242,7 @@ namespace VeracodeDSC
         {
             var retrievedPolicy = _veracodeRepository.GetPolicies()
                 .SingleOrDefault(x => x.name == app.application_name);
-            if(retrievedPolicy.description != policy.description) return true;
+            if (retrievedPolicy.description != policy.description) return true;
             if (retrievedPolicy.sca_blacklist_grace_period != policy.sca_blacklist_grace_period) return true;
             if (retrievedPolicy.score_grace_period != policy.score_grace_period) return true;
             if (retrievedPolicy.sev0_grace_period != policy.sev0_grace_period) return true;
@@ -253,7 +253,7 @@ namespace VeracodeDSC
             if (retrievedPolicy.sev5_grace_period != policy.sev5_grace_period) return true;
 
             foreach (var custom_severity in retrievedPolicy.custom_severities)
-                if(!policy.custom_severities.Any(x => x.cwe == custom_severity.cwe && x.severity == custom_severity.severity))
+                if (!policy.custom_severities.Any(x => x.cwe == custom_severity.cwe && x.severity == custom_severity.severity))
                     return true;
 
             foreach (var finding_rule in retrievedPolicy.finding_rules)
@@ -270,7 +270,7 @@ namespace VeracodeDSC
         public bool HasUserChanged(User user)
         {
             var returnedUser = _veracodeRepository.GetUser(user.email_address);
-            if(returnedUser.first_name != user.first_name) return true;
+            if (returnedUser.first_name != user.first_name) return true;
             if (returnedUser.last_name != user.last_name) return true;
             var myRoles = user.roles.Split(",").ToArray();
             var savedRoles = returnedUser.roles.Split(",").ToArray();
@@ -290,21 +290,22 @@ namespace VeracodeDSC
                 if (latestBuild == null)
                     return false;
 
-                return latestBuild.build.analysis_unit[0].status == BuildStatusType.PreScanSubmitted 
+                return latestBuild.build.analysis_unit[0].status == BuildStatusType.PreScanSubmitted
                     || latestBuild.build.analysis_unit[0].status == BuildStatusType.ScanInProcess;
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 if (e.Message.ToLower().Contains("could not find"))
                     return false;
 
                 throw e;
             }
-         }
+        }
 
         public bool IsUserAssignedToTeam(User user, ApplicationProfile app)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void StartPrescan(string app_id)

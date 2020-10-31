@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using VeracodeService.Enums;
+using Veracode.OSS.Wrapper.Enums;
 
-namespace VeracodeDSC.Shared
+namespace Veracode.OSS.Declare.Shared
 {
-   public static class EnumConverter
+    public static class EnumConverter
     {
         public static Roles Convert(string role)
         {

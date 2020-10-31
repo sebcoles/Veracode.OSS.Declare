@@ -4,14 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
-using VeracodeDSC.DataAccess.Json;
-using VeracodeDSC.Logic;
-using VeracodeDSC.Options;
-using VeracodeDSC.Shared;
-using VeracodeService;
+using Veracode.OSS.Declare.DataAccess.Json;
+using Veracode.OSS.Declare.Logic;
+using Veracode.OSS.Declare.Options;
+using Veracode.OSS.Wrapper;
 
-namespace VeracodeDSC
+namespace Veracode.OSS.Declare
 {
     class Program
     {
@@ -59,7 +57,7 @@ namespace VeracodeDSC
             foreach (var app in jsonRepository.Apps())
             {
                 bool doesScanConfirm;
-                if (options.LastScan)                
+                if (options.LastScan)
                     doesScanConfirm = dscLogic.ConformToPreviousScan(app, app.modules.ToArray());
                 else
                     doesScanConfirm = dscLogic.ConformConfiguration(app,
@@ -87,7 +85,7 @@ namespace VeracodeDSC
 
             foreach (var app in jsonRepository.Apps())
                 dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
-            
+
             return 1;
         }
 
@@ -96,8 +94,8 @@ namespace VeracodeDSC
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
             var dscLogic = _serviceProvider.GetService<IDscLogic>();
 
-            foreach (var app in jsonRepository.Apps())            
-                dscLogic.GetLatestStatus(app);            
+            foreach (var app in jsonRepository.Apps())
+                dscLogic.GetLatestStatus(app);
 
             return 1;
         }
@@ -126,9 +124,9 @@ namespace VeracodeDSC
             var jsonRepository = new JsonRepository(options.JsonFileLocation);
             var dscLogic = _serviceProvider.GetService<IDscLogic>();
 
-            foreach (var app in jsonRepository.Apps())                
+            foreach (var app in jsonRepository.Apps())
                 dscLogic.MakeMitigationTemplates(app, options.PolicyOnly);
-       
+
             return 1;
         }
 

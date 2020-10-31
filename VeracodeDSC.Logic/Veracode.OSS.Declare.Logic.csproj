@@ -11,11 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.10.31.193542" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.10.31.210701" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VeracodeDSC.Shared\VeracodeDSC.Shared.csproj" />
+    <ProjectReference Include="..\VeracodeDSC.Shared\Veracode.OSS.Declare.Shared.csproj" />
   </ItemGroup>
 
 </Project>

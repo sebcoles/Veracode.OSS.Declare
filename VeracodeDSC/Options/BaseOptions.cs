@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace VeracodeDSC.Options
+namespace Veracode.OSS.Declare.Options
 {
     public class BaseOptions
     {

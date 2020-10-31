@@ -1,16 +1,13 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using VeracodeDSC.Shared;
+using Veracode.OSS.Declare.Shared;
 
-namespace VeracodeDSC.DataAccess.Json
+namespace Veracode.OSS.Declare.DataAccess.Json
 {
     public interface IJsonRepository
     {
-        List<ApplicationProfile> Apps();       
+        List<ApplicationProfile> Apps();
     }
 
     public class JsonRepository : IJsonRepository
@@ -27,7 +24,7 @@ namespace VeracodeDSC.DataAccess.Json
             }
             _apps = config.application_profiles;
         }
-        public List<ApplicationProfile> Apps()   
+        public List<ApplicationProfile> Apps()
         {
             return _apps;
         }

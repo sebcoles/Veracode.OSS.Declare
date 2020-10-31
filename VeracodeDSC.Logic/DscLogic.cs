@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VeracodeDSC.Shared;
-using VeracodeService;
-using VeracodeService.Models;
+using Veracode.OSS.Declare.Shared;
+using Veracode.OSS.Wrapper;
+using Veracode.OSS.Wrapper.Models;
 
-namespace VeracodeDSC.Logic
+namespace Veracode.OSS.Declare.Logic
 {
     public interface IDscLogic
     {
@@ -53,7 +53,7 @@ namespace VeracodeDSC.Logic
 
                 foreach (var flaw_id in flaw_ids)
                 {
-                    if (!Int32.TryParse(flaw_id, out int result))
+                    if (!int.TryParse(flaw_id, out int result))
                     {
                         Console.WriteLine($"The flaw_id of {flaw_id} is invalid, skipping.");
                         continue;
@@ -61,8 +61,8 @@ namespace VeracodeDSC.Logic
 
                     var mitigations = _veracodeRepository.GetMitigationForFlaw(latest_build_id, flaw_id);
                     var config_mitigation = app.mitigations.SingleOrDefault(x => x.flaw_id == flaw_id);
-                    if (mitigations.Any() 
-                        && mitigations[0].mitigation_action.Any() 
+                    if (mitigations.Any()
+                        && mitigations[0].mitigation_action.Any()
                         && mitigations[0].mitigation_action.Any(x => x.comment == config_mitigation.action))
                     {
                         Console.WriteLine($"Mitigation for Flaw ID {flaw_id} has already been applied for Application Profile {app.application_name}.");
@@ -359,7 +359,7 @@ namespace VeracodeDSC.Logic
             while (scanStatus == BuildStatusType.ScanInProcess)
             {
                 ts = stopWatch.Elapsed;
-                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                     ts.Hours, ts.Minutes, ts.Seconds,
                     ts.Milliseconds / 10);
                 Console.WriteLine($"{DateTime.Now.ToLongTimeString()} : Scan {scan_id} is still running and has been running for {elapsedTime}.");
@@ -368,7 +368,7 @@ namespace VeracodeDSC.Logic
             }
 
             ts = stopWatch.Elapsed;
-            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
             stopWatch.Stop();
@@ -392,7 +392,7 @@ namespace VeracodeDSC.Logic
             while (scanStatus == BuildStatusType.PreScanSubmitted)
             {
                 ts = stopWatch.Elapsed;
-                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                     ts.Hours, ts.Minutes, ts.Seconds,
                     ts.Milliseconds / 10);
 
@@ -402,7 +402,7 @@ namespace VeracodeDSC.Logic
             }
 
             ts = stopWatch.Elapsed;
-            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
             stopWatch.Stop();
@@ -510,7 +510,7 @@ namespace VeracodeDSC.Logic
             if (policy_only)
                 flaws = flaws.Where(x => x.affects_policy_compliance).ToArray();
 
-            foreach (var flaw in flaws)            
+            foreach (var flaw in flaws)
                 messages.Add($"{{ " +
                              $"\"flaw_id\":\"{flaw.issueid}\"," +
                              $"\"cwe_id\":\"{flaw.cweid}\"," +
@@ -523,7 +523,7 @@ namespace VeracodeDSC.Logic
                              $"\"remaining_risk\":\"__ENTER_REMAINING_RISK__\"," +
                              $"\"verification\":\"__ENTER_VERIFICATION__\" " +
                              $"}}");
-            
+
             Console.WriteLine("\"mitigations\":[\n" + string.Join(",\n", messages) + "\n]");
         }
 

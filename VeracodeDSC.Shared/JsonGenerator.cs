@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace VeracodeDSC.Shared
+namespace Veracode.OSS.Declare.Shared
 {
     public class JsonGenerator
     {

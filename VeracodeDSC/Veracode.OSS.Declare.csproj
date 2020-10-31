@@ -23,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VeracodeDSC.DataAccess.Json\VeracodeDSC.DataAccess.Json.csproj" />
-    <ProjectReference Include="..\VeracodeDSC.Logic\VeracodeDSC.Logic.csproj" />
-    <ProjectReference Include="..\VeracodeDSC.Shared\VeracodeDSC.Shared.csproj" />
+    <ProjectReference Include="..\VeracodeDSC.DataAccess.Json\Veracode.OSS.Declare.DataAccess.Json.csproj" />
+    <ProjectReference Include="..\VeracodeDSC.Logic\Veracode.OSS.Declare.Logic.csproj" />
+    <ProjectReference Include="..\VeracodeDSC.Shared\Veracode.OSS.Declare.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

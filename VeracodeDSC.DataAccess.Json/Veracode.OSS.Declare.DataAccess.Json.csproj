@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VeracodeDSC.Shared\VeracodeDSC.Shared.csproj" />
+    <ProjectReference Include="..\VeracodeDSC.Shared\Veracode.OSS.Declare.Shared.csproj" />
   </ItemGroup>
 
 </Project>

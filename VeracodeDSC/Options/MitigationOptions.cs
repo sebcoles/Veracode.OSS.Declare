@@ -1,9 +1,6 @@
 ﻿using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace VeracodeDSC.Options
+namespace Veracode.OSS.Declare.Options
 {
     [Verb("mitigation", HelpText = "This will generate templates")]
     public class MitigationOptions : BaseOptions

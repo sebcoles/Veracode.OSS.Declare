@@ -14,13 +14,13 @@ variables:
 steps:
 - task: DotNetCoreCLI@2
   inputs:
-    projects: '**/*VeracodeDSC.csproj'
+    projects: '**/*Veracode.OSS.Declare.csproj'
     command: 'restore'
     includeNuGetOrg: true
 
 - task: DotNetCoreCLI@2
   inputs:
-    projects: '**/*VeracodeDSC.csproj'
+    projects: '**/*Veracode.OSS.Declare.csproj'
     command: 'build'
     arguments: '--configuration $(buildConfiguration)'
   displayName: 'dotnet build $(buildConfiguration)'
@@ -40,14 +40,14 @@ steps:
   inputs:
     rootFolderOrFile: '$(Build.BinariesDirectory)'
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/VeracodeDSC-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Veracode.OSS.Declare-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
     replaceExistingArchive: true
     includeRootFolder: false
   
 - task: GitHubRelease@1
   inputs:
     gitHubConnection: 'sebcoles'
-    repositoryName: 'sebcoles/VeracodeDSC'
+    repositoryName: 'sebcoles/Veracode.OSS.Declare'
     action: 'create'
     target: '$(Build.SourceVersion)'
     tagSource: 'userSpecifiedTag'
@@ -55,6 +55,6 @@ steps:
     title: 'v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber)'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
-    assets: '$(Build.ArtifactStagingDirectory)/VeracodeDSC-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
+    assets: '$(Build.ArtifactStagingDirectory)/Veracode.OSS.Declare-v$(MajorVersion).$(MinorVersion).$(IncrementReleaseTagNumber).zip'
 
 
