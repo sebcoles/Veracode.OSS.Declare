@@ -22,7 +22,7 @@ jobs:
           # Define some variables for things we need
           tag=$(git describe --tags --abbrev=0)
           release_name="Veracode.OSS.Declare-$tag-${{ matrix.platform }}"
-          dotnet release Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 -c Release -o "$release_name"
+          dotnet publish Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 -c Release -o "$release_name"
           if [ "${{ matrix.platform }}" == "windows-latest" ]; then
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
