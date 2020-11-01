@@ -7,18 +7,8 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS']
-        include:
-          - kind: linux
-            os: ubuntu-latest
-            target: linux-x64
-          - kind: windows
-            os: windows-latest
-            target: win-x64
-          - kind: macOS
-            os: macos-latest
-            target: osx-x64
-    runs-on: ${{ matrix.os }}
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -31,9 +21,9 @@ jobs:
       run: |
           # Define some variables for things we need
           tag=$(git describe --tags --abbrev=0)
-          release_name="Veracode.OSS.Declare-$tag-${{ matrix.target }}"
-          dotnet release Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
+          release_name="Veracode.OSS.Declare-$tag-${{ matrix.platform }}"
+          dotnet release Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 -c Release -o "$release_name"
+          if [ "${{ matrix.platform }}" == "windows-latest" ]; then
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
             tar czvf "${release_name}.tar.gz" "$release_name"
