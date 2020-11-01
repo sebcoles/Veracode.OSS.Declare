@@ -8,9 +8,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88A01250-6EC5-4670-A49F-667740B0D926}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
-		..\azure-pipelines.yml = ..\azure-pipelines.yml
+		..\.github\workflows\build.yml = ..\.github\workflows\build.yml
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
+		..\.github\workflows\release.yml = ..\.github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.DataAccess.Json", "..\Veracode.OSS.Declare.DataAccess.Json\Veracode.OSS.Declare.DataAccess.Json.csproj", "{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}"
