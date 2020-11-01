@@ -1,0 +1,1 @@
+Veracode.OSS.Declare

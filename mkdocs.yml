@@ -1,0 +1,18 @@
+site_name: Veracode Declare
+site_description: 'Veracode Declare'
+site_author: 'sebcoles'
+docs_dir: docs/
+repo_name: 'Veracode.OSS.Delcare'
+repo_url: 'https://github.com/sebcoles/Veracode.OSS.Declare/'
+theme:
+  name: 'material'
+  features:
+    - navigation.instant
+nav:
+    - Home: index.md
+    - Actions:
+        - Configure: actions/configure.md
+        - Test: actions/test.md
+        - Scan: actions/scan.md
+        - Evaluate: actions/evaluate.md
+        - Mitigation: actions/mitigation.md

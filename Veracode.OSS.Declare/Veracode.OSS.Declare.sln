@@ -9,7 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
 		..\.github\workflows\build.yml = ..\.github\workflows\build.yml
+		..\.github\workflows\docs.yml = ..\.github\workflows\docs.yml
 		..\LICENSE = ..\LICENSE
+		..\mkdocs.yml = ..\mkdocs.yml
 		..\README.md = ..\README.md
 		..\.github\workflows\release.yml = ..\.github\workflows\release.yml
 	EndProjectSection
@@ -21,6 +23,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Shared", "..\Veracode.OSS.Declare.Shared\Veracode.OSS.Declare.Shared.csproj", "{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Tests", "..\Veracode.OSS.Declare.Tests\Veracode.OSS.Declare.Tests.csproj", "{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{112F31A2-C151-4FCA-BE45-C61CE168FC4D}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\index.md = ..\docs\index.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "actions", "actions", "{9597810A-CD2F-450B-8B98-1815A7DE7CB2}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\actions\configure.md = ..\docs\actions\configure.md
+		..\docs\actions\evaluate.md = ..\docs\actions\evaluate.md
+		..\docs\actions\mitigation.md = ..\docs\actions\mitigation.md
+		..\docs\actions\scan.md = ..\docs\actions\scan.md
+		..\docs\actions\test.md = ..\docs\actions\test.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +67,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9597810A-CD2F-450B-8B98-1815A7DE7CB2} = {112F31A2-C151-4FCA-BE45-C61CE168FC4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {896A0FF6-EC52-4767-9FAD-5CB6B22EF591}
