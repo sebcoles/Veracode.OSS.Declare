@@ -26,23 +26,22 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.x
-    - name: Build
+    - name: Build and zip
       shell: bash
       run: |
           # Define some variables for things we need
           tag=$(git describe --tags --abbrev=0)
           release_name="Veracode.OSS.Declare-$tag-${{ matrix.target }}"
-          dotnet publish Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet release Veracode.OSS.Declare/Veracode.OSS.Declare.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
             tar czvf "${release_name}.tar.gz" "$release_name"
           fi
           rm -r "$release_name"
-
-      - name: Publish
-        uses: softprops/action-gh-release@v1
-        with:
-          files: "Veracode.OSS.Declare*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "Veracode.OSS.Declare*"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
