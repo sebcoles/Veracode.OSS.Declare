@@ -44,4 +44,4 @@ jobs:
       with:
         files: "Veracode.OSS.Declare*"
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.VERACODE_OSS_DECLARE }}
