@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VeracodeDSC.Logic\Veracode.OSS.Declare.Logic.csproj" />
-    <ProjectReference Include="..\VeracodeDSC.Shared\Veracode.OSS.Declare.Shared.csproj" />
+    <ProjectReference Include="..\Veracode.OSS.Declare.Logic\Veracode.OSS.Declare.Logic.csproj" />
+    <ProjectReference Include="..\Veracode.OSS.Declare.Shared\Veracode.OSS.Declare.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

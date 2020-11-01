@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare", "Veracode.OSS.Declare.csproj", "{93154AC7-6B4B-4F87-938E-342AF856779C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88A01250-6EC5-4670-A49F-667740B0D926}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\azure-pipelines.yml = ..\azure-pipelines.yml
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.DataAccess.Json", "..\Veracode.OSS.Declare.DataAccess.Json\Veracode.OSS.Declare.DataAccess.Json.csproj", "{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Logic", "..\Veracode.OSS.Declare.Logic\Veracode.OSS.Declare.Logic.csproj", "{49A1D1FA-DE15-40D3-88A3-4F71651A2249}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Shared", "..\Veracode.OSS.Declare.Shared\Veracode.OSS.Declare.Shared.csproj", "{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Tests", "..\Veracode.OSS.Declare.Tests\Veracode.OSS.Declare.Tests.csproj", "{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93154AC7-6B4B-4F87-938E-342AF856779C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93154AC7-6B4B-4F87-938E-342AF856779C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93154AC7-6B4B-4F87-938E-342AF856779C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93154AC7-6B4B-4F87-938E-342AF856779C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9EDB8FF-E188-451C-8E1A-E4B2C3AB5551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49A1D1FA-DE15-40D3-88A3-4F71651A2249}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49A1D1FA-DE15-40D3-88A3-4F71651A2249}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49A1D1FA-DE15-40D3-88A3-4F71651A2249}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49A1D1FA-DE15-40D3-88A3-4F71651A2249}.Release|Any CPU.Build.0 = Release|Any CPU
+		{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{993FEA39-D3C3-4F7B-9FDC-DFE545DB1E6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BCAD0D5-6E61-4DC3-908A-6A6233FADB28}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {896A0FF6-EC52-4767-9FAD-5CB6B22EF591}
+	EndGlobalSection
+EndGlobal
