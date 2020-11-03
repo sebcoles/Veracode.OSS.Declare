@@ -10,15 +10,13 @@ Evaluate only uses the application profile name in your configuration file. Usin
 {
   "application_profiles": [
     {
-      "application_name": "Application 1"
-    },
-    {
-      "application_name": "Application 2"
+      "application_name": "Test App"
     }
+  ]
 }
 ```
 
-## Example Output
+### Example Output
 
 ```
 [Test App][Policy][Scan Status] Results Ready
