@@ -4,7 +4,7 @@ Evaluate will check the scan run status and compliance status of your policy and
 ### Usage
 `evaluate -f "_LOCATION_OF_CONFIG_FILE_"`
 
-Evaluate only uses the application profile name in your configuration file. Using a basic configuration such as
+Evaluate only uses the application profile name in your configuration file. Using a basic configuration such as below is all you need for this command.
 
 ```
 {
