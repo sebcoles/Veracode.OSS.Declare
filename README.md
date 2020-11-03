@@ -5,12 +5,6 @@
 ![](https://img.shields.io/github/release-date/sebcoles/veracode.oss.declare)
 ![](https://img.shields.io/github/v/release/sebcoles/veracode.oss.declare)
 
-
-
-
-
-
-
 This is a GitOps/Declarative way of working with Veracode through configuration.
 
 The advantages of working in a GitOps style
