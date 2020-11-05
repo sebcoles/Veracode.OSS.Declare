@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.10.31.210701" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.5.190609" />
   </ItemGroup>
 
 </Project>

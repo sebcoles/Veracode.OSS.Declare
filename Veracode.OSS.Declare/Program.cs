@@ -26,9 +26,10 @@ namespace Veracode.OSS.Declare
 #endif
                 .Build();
             var serviceCollection = new ServiceCollection();
+            var profileName = Configuration.GetValue<string>("VeracodeFileLocation");
             serviceCollection.AddTransient(options => Microsoft.Extensions.Options.Options.Create(
                 VeracodeFileHelper.GetConfiguration(
-                    Configuration.GetValue<string>("VeracodeFileLocation"))));
+                    Configuration.GetValue<string>("VeracodeFileLocation"), profileName)));
             serviceCollection.AddScoped<IVeracodeRepository, VeracodeRepository>();
             serviceCollection.AddScoped<IVeracodeService, VeracodeService>();
             serviceCollection.AddScoped<IDscLogic, DscLogic>();
