@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.Development.json~RF6017069.TMP" />
     <None Remove="Integration\DscIntegrationTests.cs~RF16da54a1.TMP" />
     <None Remove="veracode.complete.json~RF782eba3.TMP" />
     <None Remove="veracode.complete.json~RF809047f.TMP" />
@@ -35,7 +36,7 @@
 
   <ItemGroup>
     <None Update="appsettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Assets\testapp1.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
