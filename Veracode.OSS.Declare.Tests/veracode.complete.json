@@ -4,7 +4,7 @@
       "application_name": "Test App",
       "criticality": "Very High",
       "business_owner": "seb",
-      "business_owner_email": "jam@jam.jam",
+      "business_owner_email": "scoles@veracode.com",
       "files": [
         {
           "location": "Assets/verademo.war"
@@ -55,6 +55,11 @@
           "last_name": "Coles",
           "email_address": "scoles@veracode.com",
           "roles": "Creator, Any Scan"
+        }
+      ],
+      "sandboxes": [
+        {
+          "sandbox_name": "Release Candidate"
         }
       ],
       "mitigations": [

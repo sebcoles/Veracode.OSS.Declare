@@ -12,6 +12,7 @@ namespace Veracode.OSS.Declare.Logic
 {
     public interface IDscLogic
     {
+        void MakeItSoSandboxes(ApplicationProfile app);
         void MakeItSoApp(ApplicationProfile app);
         void MakeItSoPolicy(ApplicationProfile app, Policy policy);
         void MakeItSoUser(User user, ApplicationProfile app);
@@ -286,7 +287,9 @@ namespace Veracode.OSS.Declare.Logic
             catch (Exception e)
             {
                 Console.WriteLine($"{e.Message}.");
-                _veracodeService.DeleteScan(app.id);
+                if(!e.Message.Contains("Profile"))
+                    _veracodeService.DeleteScan(app.id);
+
                 return false;
             }
         }
@@ -534,6 +537,35 @@ namespace Veracode.OSS.Declare.Logic
             var latest_build = _veracodeRepository.GetLatestScan(app.id);
             var prescanModules = _veracodeService.GetModules(app.id, $"{latest_build.build.build_id}");
             return DoesModuleConfigConform($"{latest_build.build.build_id}", configModules, prescanModules);
+        }
+
+        public void MakeItSoSandboxes(ApplicationProfile app)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            Console.WriteLine($"[{app.application_name}] Checking Sandboxes...");
+            var current_sandboxes = _veracodeRepository.GetSandboxesForApp(app.id);
+            var config_sandboxes = app.sandboxes;
+
+            if (!config_sandboxes.Any())
+            {
+                Console.WriteLine($"[{app.application_name}] No sandboxes in configuration. Skipping.");
+                return;
+            }
+
+            foreach (var config_sandbox in config_sandboxes)
+            {
+                if (!current_sandboxes.Any(x => x.sandbox_name == config_sandbox.sandbox_name))
+                {
+                    Console.WriteLine($"[{app.application_name}] Does not have sandbox with name {config_sandbox.sandbox_name}. Creating...");
+                    _veracodeRepository.CreateSandbox(app.id, config_sandbox.sandbox_name);
+                    Console.WriteLine($"[{app.application_name}] {config_sandbox.sandbox_name} creation complete!");
+                } else
+                {
+                    Console.WriteLine($"[{app.application_name}] {config_sandbox.sandbox_name} already exists! Nothing to do.");
+                }
+            }
+
+            Console.WriteLine($"[{app.application_name}] Finished Sandboxes!");
         }
     }
 }

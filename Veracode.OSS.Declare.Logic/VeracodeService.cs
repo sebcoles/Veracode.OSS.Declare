@@ -35,6 +35,7 @@ namespace Veracode.OSS.Declare.Logic
         void StartScan(string app_id, string modules);
         void DeleteScan(string app_id);
         User[] GetUserEmailsOnTeam(ApplicationProfile app);
+        bool DoSandboxesExistForApp(ApplicationProfile app);
     }
     public class VeracodeService : IVeracodeService
     {
@@ -170,7 +171,23 @@ namespace Veracode.OSS.Declare.Logic
                    .Any(x => x == user.email_address);
         }
 
-        public Module[] GetModules(string app_id, string scan_id)
+        public bool DoSandboxesExistForApp(ApplicationProfile app)
+        {
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var current_sandboxes = _veracodeRepository.GetSandboxesForApp(app.id);
+            var config_sandboxes = app.sandboxes;
+
+            if (!config_sandboxes.Any())
+                return true;          
+
+            foreach (var config_sandbox in config_sandboxes)            
+                if (!current_sandboxes.Any(x => x.sandbox_name == config_sandbox.sandbox_name))
+                    return false;                
+            
+            return true;
+        }
+
+            public Module[] GetModules(string app_id, string scan_id)
         {
             return _veracodeRepository
                    .GetModules(app_id, scan_id)

@@ -19,14 +19,14 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.9" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
     <PackageReference Include="coverlet.collector" Version="1.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 	<PackageReference Include="NUnit" Version="3.12.0" />
 	<PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-	<PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.5.190609" />
+	<PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.8.125742" />
   </ItemGroup>
 
   <ItemGroup>

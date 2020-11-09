@@ -56,7 +56,6 @@ namespace Veracode.OSS.Declare.Shared
 
     public class ApplicationProfile
     {
-        [JsonIgnore]
         public string id { get; set; }
         public string application_name { get; set; }
         public string criticality { get; set; }
@@ -67,8 +66,13 @@ namespace Veracode.OSS.Declare.Shared
         public Policy policy { get; set; }
         public List<User> users { get; set; }
         public List<Mitigation> mitigations { get; set; }
+        public List<Sandbox> sandboxes { get; set; }
     }
-
+    public class Sandbox
+    {
+        public string sandbox_id { get; set; }
+        public string sandbox_name { get; set; }
+    }
     public class Mitigation
     {
         public string flaw_id { get; set; }

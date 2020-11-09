@@ -8,10 +8,11 @@
     <None Remove="DscLogic.cs~RF78974bc.TMP" />
     <None Remove="DscLogic.cs~RFfbcd122.TMP" />
     <None Remove="VeracodeService.cs~RF119bbb01.TMP" />
+    <None Remove="VeracodeService.cs~RF169cdbd0.TMP" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.5.190609" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.8.125742" />
   </ItemGroup>
 
   <ItemGroup>
