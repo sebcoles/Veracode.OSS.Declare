@@ -16,3 +16,4 @@ nav:
         - Scan: actions/scan.md
         - Evaluate: actions/evaluate.md
         - Mitigation: actions/mitigation.md
+        - Delete: actions/delete.md

@@ -37,6 +37,10 @@ namespace Veracode.OSS.Declare.Logic
         void DeleteScan(string app_id);
         User[] GetUserEmailsOnTeam(ApplicationProfile app);
         bool DoSandboxesExistForApp(ApplicationProfile app);
+        void DeleteApp(ApplicationProfile app);
+        void DeletePolicy(ApplicationProfile app);
+        void DeleteTeam(ApplicationProfile app);
+        void DeleteUser(User user);
     }
     public class VeracodeService : IVeracodeService
     {
@@ -142,11 +146,36 @@ namespace Veracode.OSS.Declare.Logic
                 .Any(x => x == user.email_address);
         }
 
+        public void DeleteApp(ApplicationProfile app)
+        {
+            _veracodeRepository.DeleteApp(new ApplicationType
+            {
+                app_id = Int32.Parse(app.id)
+            });
+        }
+
+        public void DeletePolicy(ApplicationProfile app)
+        {
+            var retrievedPolicy = _veracodeRepository.GetPolicies().Where(x => x.name == app.application_name).SingleOrDefault();
+            _veracodeRepository.DeletePolicy(retrievedPolicy.guid);
+        }
+
         public void DeleteScan(string app_id)
         {
             _veracodeRepository.DeleteBuild(app_id);
         }
 
+        public void DeleteTeam(ApplicationProfile app)
+        {
+            var retrievedTeam = _veracodeRepository.GetTeams().Where(x => x.team_name == app.application_name).SingleOrDefault();
+            _veracodeRepository.DeleteTeam(retrievedTeam.team_id);
+        }
+
+        public void DeleteUser(User user)
+        {
+            var retrievedUser = _veracodeRepository.GetUsers().Where(x => x == user.email_address).SingleOrDefault();
+            _veracodeRepository.DeleteUser(user.email_address);
+        }
         public bool DoesAppExist(ApplicationProfile app)
         {
             return _veracodeRepository

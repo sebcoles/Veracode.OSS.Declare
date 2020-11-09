@@ -26,6 +26,7 @@ namespace Veracode.OSS.Declare.Logic
         void MakeMitigationTemplates(ApplicationProfile app, bool policy_only);
         bool ConformToPreviousScan(ApplicationProfile app, Module[] configModules);
         bool IsScanDueFromSchedule(ApplicationProfile app);
+        void TearDownProfile(ApplicationProfile app);
     }
     public class DscLogic : IDscLogic
     {
@@ -575,6 +576,68 @@ namespace Veracode.OSS.Declare.Logic
 
             _logger.LogInformation($"A new scan does not need to be started.");
             return false;
+        }
+
+        public void TearDownProfile(ApplicationProfile app)
+        {
+            _logger.LogInformation($"Checking if profile exists.");
+            if (_veracodeService.DoesAppExist(app))
+            {
+                app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+                _logger.LogInformation($"Deleting profile.");
+                _veracodeService.DeleteApp(app);
+                _logger.LogInformation($"Profile deleted.");
+            } else
+            {
+                _logger.LogInformation($"Profile doesn't exists, nothing to delete.");
+            }
+
+            _logger.LogInformation($"Checking if policy exists.");
+            if (_veracodeService.DoesPolicyExist(app))
+            {
+                _logger.LogInformation($"Deleting policy.");
+                _veracodeService.DeletePolicy(app);
+                _logger.LogInformation($"Policy deleted.");
+            }
+            else
+            {
+                _logger.LogInformation($"Policy doesn't exists, nothing to delete.");
+            }
+
+            _logger.LogInformation($"Checking if team exists.");
+            if (_veracodeService.DoesTeamExistForApp(app))
+            {
+                _logger.LogInformation($"Deleting team.");
+                _veracodeService.DeleteTeam(app);
+                _logger.LogInformation($"Team deleted.");
+            }
+            else
+            {
+                _logger.LogInformation($"Team doesn't exists, nothing to delete.");
+            }
+
+            foreach (var user in app.users)
+            {
+                _logger.LogInformation($"Checking if user exists.");
+                if (_veracodeService.DoesUserExist(user))
+                {
+                    _logger.LogInformation($"Deleting user.");
+                    try
+                    {
+                        _veracodeService.DeleteUser(user);
+                        _logger.LogInformation($"User deleted.");
+                    }
+                    catch (XmlParseError e)
+                    {
+                        if (e.Message.Contains("access denied"))
+                            _logger.LogError($"These API credentials do not have permission to delete user {user.email_address}");
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"User doesn't exists, nothing to delete.");
+                }
+            }
         }
     }
 }
