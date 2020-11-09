@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Veracode.OSS.Declare.Logic
     public interface IDscLogic
     {
         void MakeItSoSandboxes(ApplicationProfile app);
-        void MakeItSoApp(ApplicationProfile app);
+        bool MakeItSoApp(ApplicationProfile app);
         void MakeItSoPolicy(ApplicationProfile app, Policy policy);
         void MakeItSoUser(User user, ApplicationProfile app);
         void MakeItSoTeam(ApplicationProfile app);
@@ -28,9 +29,11 @@ namespace Veracode.OSS.Declare.Logic
     {
         private IVeracodeService _veracodeService;
         private IVeracodeRepository _veracodeRepository;
+        private ILogger _logger;
 
-        public DscLogic(IVeracodeService veracodeService, IVeracodeRepository veracodeRepository)
+        public DscLogic(ILogger<DscLogic> logger, IVeracodeService veracodeService, IVeracodeRepository veracodeRepository)
         {
+            _logger = logger;
             _veracodeService = veracodeService;
             _veracodeRepository = veracodeRepository;
         }
@@ -41,7 +44,7 @@ namespace Veracode.OSS.Declare.Logic
             var latest_build = _veracodeRepository.GetLatestScan(app.id);
             if (latest_build == null)
             {
-                Console.WriteLine($"{app.application_name} has no completed scans, cannot apply mitigations.");
+                _logger.LogInformation($"{app.application_name} has no completed scans, cannot apply mitigations.");
                 return;
             }
 
@@ -49,14 +52,14 @@ namespace Veracode.OSS.Declare.Logic
 
             if (app.mitigations.Any())
             {
-                Console.WriteLine($"Checking if the mitigations for Application Profile {app.application_name} have already been applied.");
+                _logger.LogInformation($"Checking if the mitigations for Application Profile {app.application_name} have already been applied.");
                 var flaw_ids = app.mitigations.Select(x => x.flaw_id).ToArray();
 
                 foreach (var flaw_id in flaw_ids)
                 {
                     if (!int.TryParse(flaw_id, out int result))
                     {
-                        Console.WriteLine($"The flaw_id of {flaw_id} is invalid, skipping.");
+                        _logger.LogWarning($"The flaw_id of {flaw_id} is invalid, skipping.");
                         continue;
                     }
 
@@ -66,161 +69,164 @@ namespace Veracode.OSS.Declare.Logic
                         && mitigations[0].mitigation_action.Any()
                         && mitigations[0].mitigation_action.Any(x => x.comment == config_mitigation.action))
                     {
-                        Console.WriteLine($"Mitigation for Flaw ID {flaw_id} has already been applied for Application Profile {app.application_name}.");
+                        _logger.LogWarning($"Mitigation for Flaw ID {flaw_id} has already been applied for Application Profile {app.application_name}.");
                     }
                     else
                     {
-                        Console.WriteLine($"Applying mitigation for Flaw ID {flaw_id} for Application Profile {app.application_name}.");
+                        _logger.LogInformation($"Applying mitigation for Flaw ID {flaw_id} for Application Profile {app.application_name}.");
                         _veracodeRepository.UpdateMitigations(latest_build_id, config_mitigation.action, config_mitigation.tsrv, flaw_id);
                         _veracodeRepository.UpdateMitigations(latest_build_id, "accepted", "Mitigation applied via DSC", flaw_id);
                     }
                 }
             }
         }
-        public void MakeItSoApp(ApplicationProfile app)
+        public bool MakeItSoApp(ApplicationProfile app)
         {
-            Console.WriteLine($"Checking to see if Application Profile {app.application_name} already exists.");
+            _logger.LogInformation($"Checking to see if Application Profile {app.application_name} already exists.");
             if (!_veracodeService.DoesAppExist(app))
             {
-                Console.WriteLine($"Application Profile {app.application_name} does not exist, adding configuration.");
+                _logger.LogInformation($"Application Profile {app.application_name} does not exist, adding configuration.");
                 try
                 {
                     _veracodeService.CreateApp(app);
-                    Console.WriteLine($"Application Profile {app.application_name} created succesfully.");
+                    _logger.LogInformation($"Application Profile {app.application_name} created succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Application Profile {app.application_name} could not be created!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"Application Profile {app.application_name} could not be created!");
+                    _logger.LogCritical($"{e.Message}.");
+                    return false;
                 }
-                return;
+                return true;
             }
 
-            Console.WriteLine($"Application Profile {app.application_name} exists.");
+            _logger.LogInformation($"Application Profile {app.application_name} exists.");
             if (_veracodeService.HasAppChanged(app))
             {
-                Console.WriteLine($"Application Profile {app.application_name} has changes, updating configuration.");
+                _logger.LogInformation($"Application Profile {app.application_name} has changes, updating configuration.");
                 try
                 {
                     _veracodeService.UpdateApp(app);
-                    Console.WriteLine($"Application Profile {app.application_name} updated succesfully.");
+                    _logger.LogInformation($"Application Profile {app.application_name} updated succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Application Profile {app.application_name} could not be updated!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"Application Profile {app.application_name} could not be updated!");
+                    _logger.LogError($"{e.Message}.");
+                    return false;
                 }
-                return;
+                return true;
             }
 
-            Console.WriteLine($"Application Profile {app.application_name} has no changes.");
+            _logger.LogInformation($"Application Profile {app.application_name} has no changes.");
+            return true;
         }
 
         public void MakeItSoPolicy(ApplicationProfile app, Policy policy)
         {
-            Console.WriteLine($"Checking to see if policy for {app.application_name} already exists.");
+            _logger.LogInformation($"Checking to see if policy for {app.application_name} already exists.");
             if (!_veracodeService.DoesPolicyExist(app))
             {
-                Console.WriteLine($"Policy for {app.application_name} does not exist, adding configuration.");
+                _logger.LogInformation($"Policy for {app.application_name} does not exist, adding configuration.");
                 try
                 {
                     _veracodeService.CreatePolicy(app, policy);
-                    Console.WriteLine($"Policy for {app.application_name} created succesfully.");
+                    _logger.LogInformation($"Policy for {app.application_name} created succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Policy for {app.application_name} could not be created!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"Policy for {app.application_name} could not be created!");
+                    _logger.LogError($"{e.Message}.");
                 }
                 return;
             }
 
-            Console.WriteLine($"Policy for {app.application_name} exists.");
+            _logger.LogInformation($"Policy for {app.application_name} exists.");
             if (_veracodeService.HasPolicyChanged(app, policy))
             {
-                Console.WriteLine($"Policy for {app.application_name} has changed, updating configuration.");
+                _logger.LogInformation($"Policy for {app.application_name} has changed, updating configuration.");
                 try
                 {
                     _veracodeService.UpdatePolicy(app, policy);
-                    Console.WriteLine($"Policy for {app.application_name} updated succesfully.");
+                    _logger.LogInformation($"Policy for {app.application_name} updated succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Policy for {app.application_name} could not be updated!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"Policy for {app.application_name} could not be updated!");
+                    _logger.LogError($"{e.Message}.");
                 }
                 return;
             }
 
-            Console.WriteLine($"Policy for {app.application_name} has no changes.");
+            _logger.LogInformation($"Policy for {app.application_name} has no changes.");
         }
 
         public void MakeItSoUser(User user, ApplicationProfile app)
         {
-            Console.WriteLine($"Checking to see if user {user.email_address} already exists.");
+            _logger.LogInformation($"Checking to see if user {user.email_address} already exists.");
             if (!_veracodeService.DoesUserExist(user))
             {
-                Console.WriteLine($"User {user.email_address} does not exist, adding configuration.");
+                _logger.LogInformation($"User {user.email_address} does not exist, adding configuration.");
                 try
                 {
                     _veracodeService.CreateUser(user, app);
-                    Console.WriteLine($"User {user.email_address} created succesfully.");
+                    _logger.LogInformation($"User {user.email_address} created succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"User {user.email_address} could not be created!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"User {user.email_address} could not be created!");
+                    _logger.LogError($"{e.Message}.");
                 }
                 return;
             }
 
-            Console.WriteLine($"User {user.email_address} exists.");
+            _logger.LogInformation($"User {user.email_address} exists.");
             if (_veracodeService.HasUserChanged(user))
             {
-                Console.WriteLine($"User {user.email_address} has changed, updating configuration.");
+                _logger.LogInformation($"User {user.email_address} has changed, updating configuration.");
                 try
                 {
                     _veracodeService.UpdateUser(user);
-                    Console.WriteLine($"User {user.email_address} updated succesfully.");
+                    _logger.LogInformation($"User {user.email_address} updated succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"User {user.email_address} could not be updated!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"User {user.email_address} could not be updated!");
+                    _logger.LogError($"{e.Message}.");
                 }
                 return;
             }
 
-            Console.WriteLine($"User {user.email_address} has no changes.");
+            _logger.LogInformation($"User {user.email_address} has no changes.");
         }
 
         public void MakeItSoTeam(ApplicationProfile app)
         {
-            Console.WriteLine($"Checking to see if team {app.application_name} already exists.");
+            _logger.LogInformation($"Checking to see if team {app.application_name} already exists.");
             if (!_veracodeService.DoesTeamExistForApp(app))
             {
-                Console.WriteLine($"Team {app.application_name} does not exist, adding configuration.");
+                _logger.LogInformation($"Team {app.application_name} does not exist, adding configuration.");
                 try
                 {
                     _veracodeService.CreateTeamForApp(app);
-                    Console.WriteLine($"Team {app.application_name} created succesfully.");
+                    _logger.LogInformation($"Team {app.application_name} created succesfully.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Team {app.application_name} could not be created!");
-                    Console.WriteLine($"{e.Message}.");
+                    _logger.LogError($"Team {app.application_name} could not be created!");
+                    _logger.LogError($"{e.Message}.");
                 }
                 return;
             }
 
-            Console.WriteLine($"Team {app.application_name} exists.");
+            _logger.LogInformation($"Team {app.application_name} exists.");
             var usersInTeam = _veracodeService.GetUserEmailsOnTeam(app);
             foreach (var user in usersInTeam)
             {
-                Console.WriteLine($"Checking if {user.email_address} is assigned to team {app.application_name}.");
+                _logger.LogInformation($"Checking if {user.email_address} is assigned to team {app.application_name}.");
                 if (!_veracodeService.IsUserAssignedToTeam(user, app))
                 {
-                    Console.WriteLine($"User {user.email_address} is not assigned to team {app.application_name}, updating configuration.");
+                    _logger.LogInformation($"User {user.email_address} is not assigned to team {app.application_name}, updating configuration.");
                     try
                     {
                         if (string.IsNullOrEmpty(user.teams))
@@ -229,17 +235,17 @@ namespace Veracode.OSS.Declare.Logic
                             user.teams = $",{app.application_name}";
 
                         _veracodeService.UpdateUser(user);
-                        Console.WriteLine($"User {user.email_address} assigned to team {app.application_name} succesfully.");
+                        _logger.LogInformation($"User {user.email_address} assigned to team {app.application_name} succesfully.");
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"User {user.email_address} could not be added to team {app.application_name}!");
-                        Console.WriteLine($"{e.Message}.");
+                        _logger.LogError($"User {user.email_address} could not be added to team {app.application_name}!");
+                        _logger.LogError($"{e.Message}.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"User {user.email_address} is already assigned to team {app.application_name}.");
+                    _logger.LogInformation($"User {user.email_address} is already assigned to team {app.application_name}.");
                 }
             }
         }
@@ -257,19 +263,21 @@ namespace Veracode.OSS.Declare.Logic
                 if (!_veracodeService.IsPolicyScanInProgress(app))
                 {
                     var scan_id = _veracodeService.CreateScan(app);
-                    Console.WriteLine($"New scan created with Build Id {scan_id}. Uploading files");
+                    _logger.LogInformation($"New scan created with Build Id {scan_id}. Uploading files");
                     UploadFiles(app, scan_id, files);
-                    RunPreScan(app, scan_id);
+                    RunScan(app, scan_id, "", _veracodeService.StartPreScan, 
+                        BuildStatusType.PreScanSubmitted, BuildStatusType.PreScanFailed);
+
                     var prescanModules = _veracodeService.GetModules(app.id, scan_id);
                     var doesScanConform = DoesModuleConfigConform(scan_id, configModules, prescanModules);
 
                     if (isTest)
-                        Console.WriteLine($"Test Finished. Deleting Build Id {scan_id}.");
+                        _logger.LogInformation($"Test Finished. Deleting Build Id {scan_id}.");
 
                     if (doesScanConform)
-                        Console.WriteLine($"Configuration conforms.");
+                        _logger.LogInformation($"Configuration conforms.");
                     else
-                        Console.WriteLine($"Scan does not conform. Deleting Build Id {scan_id}.");
+                        _logger.LogInformation($"Scan does not conform. Deleting Build Id {scan_id}.");
 
 
                     if (isTest || !doesScanConform)
@@ -279,14 +287,14 @@ namespace Veracode.OSS.Declare.Logic
                 }
                 else
                 {
-                    Console.WriteLine($"Policy scan for {app.application_name} already in progress.");
-                    Console.WriteLine($"This must be cancelled or completed before this job can be continued.");
+                    _logger.LogWarning($"Policy scan for {app.application_name} already in progress.");
+                    _logger.LogWarning($"This must be cancelled or completed before this job can be continued.");
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.Message}.");
+                _logger.LogInformation($"{e.Message}.");
                 if(!e.Message.Contains("Profile"))
                     _veracodeService.DeleteScan(app.id);
 
@@ -302,7 +310,7 @@ namespace Veracode.OSS.Declare.Logic
 
                 if (!ConformConfiguration(app, files, configModules, false))
                 {
-                    Console.WriteLine("Config does not conform, cancelling scan.");
+                    _logger.LogWarning("Config does not conform, cancelling scan.");
                     return;
                 }
 
@@ -319,13 +327,15 @@ namespace Veracode.OSS.Declare.Logic
 
                 var moduleList = string.Join(",", modulesToScan);
 
-                Console.WriteLine("Starting scan.");
-                RunScan(app, $"{scan_id}", moduleList);
-                Console.WriteLine($"Deployment complete.");
+                _logger.LogInformation("Starting scan.");
+                RunScan(app, $"{scan_id}", moduleList, _veracodeService.StartScan, 
+                    BuildStatusType.ScanInProcess, BuildStatusType.ScanErrors);
+
+                _logger.LogInformation($"Deployment complete.");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.Message}.");
+                _logger.LogError($"{e.Message}.");
             }
         }
 
@@ -346,26 +356,27 @@ namespace Veracode.OSS.Declare.Logic
 
         private void UploadTask(File binary, string app_id, string scan_id)
         {
-            Console.WriteLine($"Uploading {binary.location} to scan {scan_id}.");
+            _logger.LogInformation($"Uploading {binary.location} to scan {scan_id}.");
             _veracodeService.AddFileToScan(app_id, binary.location);
-            Console.WriteLine($"Upload of {binary.location} complete.");
+            _logger.LogInformation($"Upload of {binary.location} complete.");
         }
-        public void RunScan(ApplicationProfile app, string scan_id, string modules)
+        public void RunScan(ApplicationProfile app, string scan_id, 
+            string modules, Action<string, string> ScanMethod, BuildStatusType running, BuildStatusType failure)
         {
             var stopWatch = new Stopwatch();
             TimeSpan ts;
             string elapsedTime;
             stopWatch.Start();
 
-            _veracodeService.StartScan(app.id, modules);
-            var scanStatus = BuildStatusType.ScanInProcess;
-            while (scanStatus == BuildStatusType.ScanInProcess)
+            ScanMethod(app.id, modules);
+            var scanStatus = running;
+            while (scanStatus == running)
             {
                 ts = stopWatch.Elapsed;
                 elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                     ts.Hours, ts.Minutes, ts.Seconds,
                     ts.Milliseconds / 10);
-                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} : Scan {scan_id} is still running and has been running for {elapsedTime}.");
+                _logger.LogInformation($"Scan {scan_id} is still running and has been running for {elapsedTime}.");
                 Thread.Sleep(20000);
                 scanStatus = _veracodeService.GetScanStatus(app.id, $"{scan_id}");
             }
@@ -376,45 +387,10 @@ namespace Veracode.OSS.Declare.Logic
                 ts.Milliseconds / 10);
             stopWatch.Stop();
 
-            if (scanStatus == BuildStatusType.ScanErrors)
+            if (scanStatus == failure)
                 throw new Exception("Scan status returned an error status.");
 
-            Console.WriteLine($"Scan complete for {scan_id} and took {elapsedTime}.");
-        }
-
-        public void RunPreScan(ApplicationProfile app, string scan_id)
-        {
-            var stopWatch = new Stopwatch();
-            TimeSpan ts;
-            string elapsedTime;
-            stopWatch.Start();
-
-            _veracodeService.StartPrescan(app.id);
-
-            var scanStatus = BuildStatusType.PreScanSubmitted;
-            while (scanStatus == BuildStatusType.PreScanSubmitted)
-            {
-                ts = stopWatch.Elapsed;
-                elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                    ts.Hours, ts.Minutes, ts.Seconds,
-                    ts.Milliseconds / 10);
-
-                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} : Pre scan {scan_id} is still running and has been running for {elapsedTime}.");
-                Thread.Sleep(20000);
-                scanStatus = _veracodeService.GetScanStatus(app.id, scan_id);
-            }
-
-            ts = stopWatch.Elapsed;
-            elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
-            stopWatch.Stop();
-            stopWatch.Stop();
-
-            if (scanStatus == BuildStatusType.PreScanFailed)
-                throw new Exception("Pre scan status returned an error status.");
-
-            Console.WriteLine($"Pre scan complete for {scan_id} and took {elapsedTime}.");
+            _logger.LogInformation($"Scan complete for {scan_id} and took {elapsedTime}.");
         }
 
         public bool DoesModuleConfigConform(string newScan, Module[] configModules, Module[] prescanModules)
@@ -429,12 +405,9 @@ namespace Veracode.OSS.Declare.Logic
 
             if (missingFromConfig.Count() > 0)
             {
-                Console.WriteLine($"There are {missingFromConfig.Count()} modules from prescan that do not match the config.");
-                foreach (var mod in missingFromConfig)
-                    foreach (var message in mod.messages)
-                        Console.WriteLine($"{mod.module_name}:{message}");
+                _logger.LogWarning($"There are {missingFromConfig.Count()} modules from prescan that do not match the config.");
 
-                Console.WriteLine($"Please include and complete the below configuration and add to your .json file");
+                _logger.LogWarning($"Please include and complete the below configuration and add to your .json file");
                 var messages = new List<string>();
                 foreach (var mod in missingFromConfig)
                 {
@@ -444,24 +417,28 @@ namespace Veracode.OSS.Declare.Logic
                         $"{module_selection}" +
                         $"}}");
                 }
-                Console.WriteLine("\"modules\":[\n" + string.Join(",\n", messages) + "\n]");
+                _logger.LogInformation("\"modules\":[\n" + string.Join(",\n", messages) + "\n]");
             }
 
             if (missingFromPrescan.Count() > 0)
             {
-                Console.WriteLine($"There are {missingFromPrescan.Count()} modules that are configured but are not in the prescan results.");
-                Console.WriteLine($"Thes modules need removed or resolved before a scan can continue.");
+                _logger.LogWarning($"There are {missingFromPrescan.Count()} modules that are configured but are not in the prescan results.");
+                _logger.LogWarning($"Thes modules need removed or resolved before a scan can continue.");
                 foreach (var mod in missingFromPrescan)
-                    Console.WriteLine($"{mod.module_name}");
+                    _logger.LogInformation($"{mod.module_name}");
             }
+
+            foreach (var mod in prescanModules)
+                foreach (var message in mod.messages)
+                    _logger.LogWarning($"PRE SCAN ERRORS: {mod.module_name}:{message}");
 
             if (missingFromConfig.Count() > 0 || missingFromPrescan.Count() > 0)
             {
-                Console.WriteLine($"Module selection configuration was incorrect for {newScan}.");
+                _logger.LogWarning($"Module selection configuration was incorrect for {newScan}.");
                 return false;
             }
 
-            Console.WriteLine($"Module selection conforms for {newScan} and the scan can commence.");
+            _logger.LogInformation($"Module selection conforms for {newScan} and the scan can commence.");
             return true;
         }
 
@@ -472,26 +449,26 @@ namespace Veracode.OSS.Declare.Logic
             var latest_policy_build = _veracodeRepository.GetLatestScan(app.id).build;
 
             var scanStatus = _veracodeService.GetScanStatus(app.id, $"{latest_policy_build.build_id}");
-            Console.WriteLine($"[{app.application_name}][Policy][Scan Status] {VeracodeEnumConverter.Convert(scanStatus)}");
+            _logger.LogInformation($"[{app.application_name}][Policy][Scan Status] {VeracodeEnumConverter.Convert(scanStatus)}");
 
             var compliance = VeracodeEnumConverter.Convert(latest_policy_build.policy_compliance_status);
-            Console.WriteLine($"[{app.application_name}][Policy][Compliance Status] {compliance}");
+            _logger.LogInformation($"[{app.application_name}][Policy][Compliance Status] {compliance}");
 
             foreach (var sandbox in sandboxes)
             {
                 var latest_sandbox_build = _veracodeRepository.GetLatestScanSandbox(app.id, $"{sandbox.sandbox_id}");
                 if (latest_sandbox_build == null)
                 {
-                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] There are no scans!");
+                    _logger.LogInformation($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] There are no scans!");
                 }
                 else
                 {
                     var latest_sandbox_build_id = $"{latest_sandbox_build.build.build_id}";
                     var scanSandboxStatus = _veracodeService.GetScanStatus(app.id, latest_sandbox_build_id);
-                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] {VeracodeEnumConverter.Convert(scanSandboxStatus)}");
+                    _logger.LogInformation($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Scan Status] {VeracodeEnumConverter.Convert(scanSandboxStatus)}");
 
                     var sandboxCompliance = VeracodeEnumConverter.Convert(latest_sandbox_build.build.policy_compliance_status);
-                    Console.WriteLine($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Compliance Status] {VeracodeEnumConverter.Convert(latest_sandbox_build.build.policy_compliance_status)}");
+                    _logger.LogInformation($"[{app.application_name}][Sandbox {sandbox.sandbox_name}][Compliance Status] {VeracodeEnumConverter.Convert(latest_sandbox_build.build.policy_compliance_status)}");
                 }
             }
         }
@@ -502,7 +479,7 @@ namespace Veracode.OSS.Declare.Logic
             var latest_build = _veracodeRepository.GetLatestScan(app.id);
             if (latest_build == null)
             {
-                Console.WriteLine($"{app.application_name} has no completed scans, no mitigations to create templates for.");
+                _logger.LogInformation($"{app.application_name} has no completed scans, no mitigations to create templates for.");
                 return;
             }
 
@@ -527,7 +504,7 @@ namespace Veracode.OSS.Declare.Logic
                              $"\"verification\":\"__ENTER_VERIFICATION__\" " +
                              $"}}");
 
-            Console.WriteLine("\"mitigations\":[\n" + string.Join(",\n", messages) + "\n]");
+            _logger.LogInformation("\"mitigations\":[\n" + string.Join(",\n", messages) + "\n]");
         }
 
 
@@ -542,13 +519,13 @@ namespace Veracode.OSS.Declare.Logic
         public void MakeItSoSandboxes(ApplicationProfile app)
         {
             app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
-            Console.WriteLine($"[{app.application_name}] Checking Sandboxes...");
+            _logger.LogInformation($"[{app.application_name}] Checking Sandboxes...");
             var current_sandboxes = _veracodeRepository.GetSandboxesForApp(app.id);
             var config_sandboxes = app.sandboxes;
 
             if (!config_sandboxes.Any())
             {
-                Console.WriteLine($"[{app.application_name}] No sandboxes in configuration. Skipping.");
+                _logger.LogInformation($"[{app.application_name}] No sandboxes in configuration. Skipping.");
                 return;
             }
 
@@ -556,16 +533,16 @@ namespace Veracode.OSS.Declare.Logic
             {
                 if (!current_sandboxes.Any(x => x.sandbox_name == config_sandbox.sandbox_name))
                 {
-                    Console.WriteLine($"[{app.application_name}] Does not have sandbox with name {config_sandbox.sandbox_name}. Creating...");
+                    _logger.LogInformation($"[{app.application_name}] Does not have sandbox with name {config_sandbox.sandbox_name}. Creating...");
                     _veracodeRepository.CreateSandbox(app.id, config_sandbox.sandbox_name);
-                    Console.WriteLine($"[{app.application_name}] {config_sandbox.sandbox_name} creation complete!");
+                    _logger.LogInformation($"[{app.application_name}] {config_sandbox.sandbox_name} creation complete!");
                 } else
                 {
-                    Console.WriteLine($"[{app.application_name}] {config_sandbox.sandbox_name} already exists! Nothing to do.");
+                    _logger.LogInformation($"[{app.application_name}] {config_sandbox.sandbox_name} already exists! Nothing to do.");
                 }
             }
 
-            Console.WriteLine($"[{app.application_name}] Finished Sandboxes!");
+            _logger.LogInformation($"[{app.application_name}] Finished Sandboxes!");
         }
     }
 }

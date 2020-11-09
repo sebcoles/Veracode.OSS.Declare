@@ -107,8 +107,8 @@ namespace Veracode.OSS.Declare
             foreach (var app in jsonRepository.Apps())
             {
                 _logger.LogInformation($"Starting scan for {app.application_name}");
-                _logger.LogInformation($"Files being scanned are:\\n{String.Join("\\n", app.files.Select(x => JsonConvert.SerializeObject(x)))}");
-                _logger.LogInformation($"Modules being scanned are:\\n{String.Join("\\n", app.modules.Select(x => JsonConvert.SerializeObject(x)))}");
+                _logger.LogInformation($"Files being scanned are:\\n{String.Join("\n", app.files.Select(x => x.location))}");
+                _logger.LogInformation($"Modules being scanned are:\\n{String.Join("\n", app.modules.Select(x => $"module_name={x.module_name},entry_point={x.entry_point}"))}");
                 dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
                 _logger.LogInformation($"Scan complete for {app.application_name}");
             }
@@ -143,7 +143,9 @@ namespace Veracode.OSS.Declare
             foreach (var app in jsonRepository.Apps())
             {
                 _logger.LogInformation($"Starting build for {app.application_name}");
-                dscLogic.MakeItSoApp(app);
+                if (!dscLogic.MakeItSoApp(app))
+                    return 0;
+
                 dscLogic.MakeItSoPolicy(app, app.policy);
                 dscLogic.MakeItSoTeam(app);
                 foreach (var user in app.users)

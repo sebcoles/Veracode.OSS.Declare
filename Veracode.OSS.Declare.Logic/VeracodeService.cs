@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Veracode.OSS.Declare.Shared;
@@ -30,7 +31,7 @@ namespace Veracode.OSS.Declare.Logic
         bool CancelScan(string scan_id, string app_id);
         bool IsPolicyScanInProgress(ApplicationProfile app);
         void AddFileToScan(string app_id, string filepath);
-        void StartPrescan(string app_id);
+        void StartPreScan(string app_id, string modules);
         Module[] GetModules(string app_id, string scan_id);
         void StartScan(string app_id, string modules);
         void DeleteScan(string app_id);
@@ -40,8 +41,11 @@ namespace Veracode.OSS.Declare.Logic
     public class VeracodeService : IVeracodeService
     {
         private IVeracodeRepository _veracodeRepository;
-        public VeracodeService(IVeracodeRepository veracodeRepository)
+        private ILogger _logger;
+
+        public VeracodeService(ILogger<VeracodeService> logger, IVeracodeRepository veracodeRepository)
         {
+            _logger = logger;
             _veracodeRepository = veracodeRepository;
         }
         public void AddFileToScan(string app_id, string filepath)
@@ -325,7 +329,7 @@ namespace Veracode.OSS.Declare.Logic
             throw new NotImplementedException();
         }
 
-        public void StartPrescan(string app_id)
+        public void StartPreScan(string app_id, string modules)
         {
             _veracodeRepository.StartPrescan(app_id);
         }
