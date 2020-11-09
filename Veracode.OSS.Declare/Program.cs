@@ -106,11 +106,26 @@ namespace Veracode.OSS.Declare
 
             foreach (var app in jsonRepository.Apps())
             {
-                _logger.LogInformation($"Starting scan for {app.application_name}");
-                _logger.LogInformation($"Files being scanned are:\\n{String.Join("\n", app.files.Select(x => x.location))}");
-                _logger.LogInformation($"Modules being scanned are:\\n{String.Join("\n", app.modules.Select(x => $"module_name={x.module_name},entry_point={x.entry_point}"))}");
-                dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
-                _logger.LogInformation($"Scan complete for {app.application_name}");
+                bool scheduled = false;
+
+                if (String.IsNullOrWhiteSpace(app.policy_schedule))
+                    _logger.LogWarning($"There is no policy schedule configured for {app.application_name}");
+                else
+                    scheduled = dscLogic.IsScanDueFromSchedule(app);
+
+                if(scheduled || options.IgnoreSchedule)
+                {
+                    _logger.LogInformation($"Starting scan for {app.application_name}");
+                    _logger.LogInformation($"Files being scanned are:");
+                    foreach (var file in app.files.Select(x => x.location))
+                        _logger.LogInformation($"{file}");
+
+                    _logger.LogInformation($"Modules being scanned are:");
+                    foreach (var module in app.modules.Select(x => $"module_name={x.module_name},entry_point={x.entry_point}"))
+                        _logger.LogInformation($"{module}");
+
+                    dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
+                }
             }
 
             _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
@@ -128,6 +143,12 @@ namespace Veracode.OSS.Declare
             {
                 _logger.LogInformation($"Starting evaluation for {app.application_name}");
                 dscLogic.GetLatestStatus(app);
+
+                if (String.IsNullOrWhiteSpace(app.policy_schedule))                
+                    _logger.LogWarning($"There is no policy schedule configured for {app.application_name}");
+                else                
+                    dscLogic.IsScanDueFromSchedule(app);
+
                 _logger.LogInformation($"Evaluation complete for {app.application_name}");
             }
 

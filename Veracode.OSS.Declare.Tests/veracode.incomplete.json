@@ -1,6 +1,7 @@
 ﻿{
   "application_profiles": [
     {
+      "policy_schedule": "0 0 * * *",
       "application_name": "Test App",
       "criticality": "Very High",
       "business_owner": "seb",

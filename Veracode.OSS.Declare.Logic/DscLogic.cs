@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Veracode.OSS.Declare.Shared;
 using Veracode.OSS.Wrapper;
 using Veracode.OSS.Wrapper.Models;
+using Veracode.OSS.Wrapper.Rest;
 
 namespace Veracode.OSS.Declare.Logic
 {
@@ -24,6 +25,7 @@ namespace Veracode.OSS.Declare.Logic
         void GetLatestStatus(ApplicationProfile app);
         void MakeMitigationTemplates(ApplicationProfile app, bool policy_only);
         bool ConformToPreviousScan(ApplicationProfile app, Module[] configModules);
+        bool IsScanDueFromSchedule(ApplicationProfile app);
     }
     public class DscLogic : IDscLogic
     {
@@ -543,6 +545,36 @@ namespace Veracode.OSS.Declare.Logic
             }
 
             _logger.LogInformation($"[{app.application_name}] Finished Sandboxes!");
+        }
+
+        public bool IsScanDueFromSchedule(ApplicationProfile app)
+        { 
+            app.id = $"{_veracodeRepository.GetAllApps().SingleOrDefault(x => x.app_name == app.application_name).app_id}";
+            var lastScan = _veracodeRepository.GetLatestScan(app.id);
+
+            if(lastScan == null)
+            {
+                _logger.LogWarning($"[{app.application_name}] Has not had a scan yet, the first scan is due.");
+                return true;
+            }
+
+            if (lastScan.build.analysis_unit[0].status != BuildStatusType.ResultsReady)            
+                _logger.LogWarning($"[{app.application_name}] Currently has a scan in progress in the status of [{lastScan.build.analysis_unit[0].status}]");
+            
+
+            if (CronHelper.IsANewScanDue(app.policy_schedule, lastScan.build.analysis_unit[0].published_date))
+            {
+                var dueDays = CronHelper.HowManyDaysAgo(app.policy_schedule, lastScan.build.analysis_unit[0].published_date);
+                _logger.LogWarning($"[{app.application_name}] last scan was {lastScan.build.analysis_unit[0].published_date.ToLongDateString()} and was due {dueDays} days ago.");
+                return true;
+            } else
+            {
+                _logger.LogInformation($"A scan is not due according to the schedule.");
+                _logger.LogInformation($"Last scan completed at {lastScan.build.analysis_unit[0].published_date.ToLongDateString()}");
+            }
+
+            _logger.LogInformation($"A new scan does not need to be started.");
+            return false;
         }
     }
 }

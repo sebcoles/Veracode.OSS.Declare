@@ -5,8 +5,8 @@ namespace Veracode.OSS.Declare.Options
     [Verb("scan", HelpText = "This will run a policy scan if the config if valid")]
     public class ScanOptions : BaseOptions
     {
-        [Option("scan_name", Default = "", Required = false, HelpText = "Location of JSON configuration file")]
-        public string ScanName { get; set; }
+        [Option('i',"ignore_schedule", Default = false, Required = false, HelpText = "Use this option to override schedule in configuration")]
+        public bool IgnoreSchedule { get; set; }
     }
 
 }

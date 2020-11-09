@@ -57,6 +57,7 @@ namespace Veracode.OSS.Declare.Shared
     public class ApplicationProfile
     {
         public string id { get; set; }
+        public string policy_schedule { get; set; }
         public string application_name { get; set; }
         public string criticality { get; set; }
         public string business_owner { get; set; }
