@@ -92,7 +92,10 @@ namespace Veracode.OSS.Declare
                 }
 
                 var message = doesScanConfirm ? "DOES" : "DOES NOT";
-                _logger.LogInformation($"Application {app.application_name} scan config {message} conforms.");
+                if(doesScanConfirm)
+                    _logger.LogInformation($"Application {app.application_name} scan config {message} conforms.");
+                else
+                    _logger.LogWarning($"Application {app.application_name} scan config {message} conforms.");
             }
 
             _logger.LogInformation($"Scan Configuration testing complete.");

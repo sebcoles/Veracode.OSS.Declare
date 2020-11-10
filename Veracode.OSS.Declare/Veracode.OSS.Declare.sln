@@ -32,7 +32,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "actions", "actions", "{9597810A-CD2F-450B-8B98-1815A7DE7CB2}"
 	ProjectSection(SolutionItems) = preProject
 		..\docs\actions\configure.md = ..\docs\actions\configure.md
-		delete.md = delete.md
+		..\docs\actions\delete.md = ..\docs\actions\delete.md
 		..\docs\actions\evaluate.md = ..\docs\actions\evaluate.md
 		..\docs\actions\mitigation.md = ..\docs\actions\mitigation.md
 		..\docs\actions\scan.md = ..\docs\actions\scan.md
