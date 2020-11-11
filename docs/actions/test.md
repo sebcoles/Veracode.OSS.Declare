@@ -12,7 +12,7 @@ The below configuration does not have a completed module selection. The test wil
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "scoles@veracode.com",
-      "files": [
+      "upload": [
         {
           "location": "Assets/verademo.war"
         }
@@ -115,7 +115,7 @@ The below configuration now has a valid module configuration so the test will pa
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "scoles@veracode.com",
-      "files": [
+      "upload": [
         {
           "location": "Assets/verademo.war"
         }

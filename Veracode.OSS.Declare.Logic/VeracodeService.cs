@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Veracode.OSS.Declare.Configuration.Models;
 using Veracode.OSS.Declare.Shared;
 using Veracode.OSS.Wrapper;
 using Veracode.OSS.Wrapper.Models;
@@ -95,8 +96,8 @@ namespace Veracode.OSS.Declare.Logic
                 sev5_grace_period = policy.sev5_grace_period,
                 type = "CUSTOMER",
                 vendor_policy = false,
-                scan_frequency_rules = policy.scan_frequency_rules,
-                finding_rules = policy.finding_rules,
+                scan_frequency_rules = policy.scan_frequency_rules.Select(ConfigurationConverter.Convert).ToList(),
+                finding_rules = policy.finding_rules.Select(ConfigurationConverter.Convert).ToList(),
                 created = DateTime.Now
             });
             return _veracodeRepository
@@ -394,9 +395,9 @@ namespace Veracode.OSS.Declare.Logic
             retrievedPolicy.sev3_grace_period = policy.sev3_grace_period;
             retrievedPolicy.sev4_grace_period = policy.sev4_grace_period;
             retrievedPolicy.sev5_grace_period = policy.sev5_grace_period;
-            retrievedPolicy.custom_severities = policy.custom_severities;
-            retrievedPolicy.finding_rules = policy.finding_rules;
-            retrievedPolicy.scan_frequency_rules = policy.scan_frequency_rules;
+            retrievedPolicy.custom_severities = policy.custom_severities.Select(ConfigurationConverter.Convert).ToList();
+            retrievedPolicy.finding_rules = policy.finding_rules.Select(ConfigurationConverter.Convert).ToList();
+            retrievedPolicy.scan_frequency_rules = policy.scan_frequency_rules.Select(ConfigurationConverter.Convert).ToList();
             retrievedPolicy.created = DateTime.Now;
             _veracodeRepository.UpdatePolicy(retrievedPolicy, retrievedPolicy.guid);
         }

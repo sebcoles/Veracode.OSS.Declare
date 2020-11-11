@@ -21,7 +21,7 @@ The below configuration can be used to create a profile for the application "Tes
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "scoles@veracode.com",
-      "files": [],
+      "upload": [],
       "modules": [],
       "policy": {
         "custom_severities": [

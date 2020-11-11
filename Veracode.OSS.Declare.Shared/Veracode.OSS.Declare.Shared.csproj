@@ -10,7 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Cronos" Version="0.7.0" />
-    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.8.125742" />
+    <PackageReference Include="Veracode.OSS.Declare.Configuration" Version="2020.11.11.113002" />
+    <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.11.90919" />
   </ItemGroup>
 
 </Project>

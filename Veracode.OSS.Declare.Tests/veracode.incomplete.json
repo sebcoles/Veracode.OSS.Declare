@@ -6,7 +6,7 @@
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "scoles@veracode.com",
-      "files": [
+      "upload": [
         {
           "location": "Assets/verademo.war"
         }

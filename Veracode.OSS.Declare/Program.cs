@@ -2,13 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Veracode.OSS.Declare.DataAccess.Json;
+using Veracode.OSS.Declare.Configuration;
 using Veracode.OSS.Declare.Logic;
 using Veracode.OSS.Declare.Options;
 using Veracode.OSS.Declare.Shared;
@@ -73,8 +72,8 @@ namespace Veracode.OSS.Declare
         static int Test(TestOptions options)
         {
             _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
-            foreach (var app in jsonRepository.Apps())
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
+            foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Testing configuration for {app.application_name}");
                 bool doesScanConfirm;
@@ -87,7 +86,7 @@ namespace Veracode.OSS.Declare
                 {
                     _logger.LogInformation($"Testing against a new scan");
                     doesScanConfirm = _dscLogic.ConformConfiguration(app,
-                            app.files.ToArray(),
+                            app.upload.ToArray(),
                             app.modules.ToArray(), true);
                 }
 
@@ -107,9 +106,9 @@ namespace Veracode.OSS.Declare
         {
             _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
 
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
-            foreach (var app in jsonRepository.Apps())
+            foreach (var app in declareConfigRepository.Apps())
             {
                 bool scheduled = false;
 
@@ -122,14 +121,14 @@ namespace Veracode.OSS.Declare
                 {
                     _logger.LogInformation($"Starting scan for {app.application_name}");
                     _logger.LogInformation($"Files being scanned are:");
-                    foreach (var file in app.files.Select(x => x.location))
+                    foreach (var file in app.upload.Select(x => x.location))
                         _logger.LogInformation($"{file}");
 
                     _logger.LogInformation($"Modules being scanned are:");
                     foreach (var module in app.modules.Select(x => $"module_name={x.module_name},entry_point={x.entry_point}"))
                         _logger.LogInformation($"{module}");
 
-                    _dscLogic.MakeItSoScan(app, app.files.ToArray(), app.modules.ToArray());
+                    _dscLogic.MakeItSoScan(app, app.upload.ToArray(), app.modules.ToArray());
                 }
             }
 
@@ -141,9 +140,9 @@ namespace Veracode.OSS.Declare
         {
             _logger.LogInformation("Evaluating the applications in the configuration file.");
            
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
-            foreach (var app in jsonRepository.Apps())
+            foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Starting evaluation for {app.application_name}");
                 _dscLogic.GetLatestStatus(app);
@@ -163,8 +162,8 @@ namespace Veracode.OSS.Declare
         static int Configure(ConfigureOptions options)
         {
             _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
-            foreach (var app in jsonRepository.Apps())
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
+            foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Starting build for {app.application_name}");
                 if (!_dscLogic.MakeItSoApp(app))
@@ -189,9 +188,9 @@ namespace Veracode.OSS.Declare
         static int MitigationTemplates(MitigationOptions options)
         {
             _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
-            foreach (var app in jsonRepository.Apps())
+            foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Generating mitigations templates for {app.application_name}");
                 _dscLogic.MakeMitigationTemplates(app, options.PolicyOnly);
@@ -205,8 +204,8 @@ namespace Veracode.OSS.Declare
         static int Delete(DeleteOptions options)
         {
             _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
-            var jsonRepository = new JsonRepository(options.JsonFileLocation);
-            foreach (var app in jsonRepository.Apps())
+            var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
+            foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Tearing down {app.application_name}");
                 _dscLogic.TearDownProfile(app);

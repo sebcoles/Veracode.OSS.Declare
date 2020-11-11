@@ -15,7 +15,7 @@ The below configuration has valid module configuration and will run a complete s
       "criticality": "Very High",
       "business_owner": "seb",
       "business_owner_email": "scoles@veracode.com",
-      "files": [
+      "upload": [
         {
           "location": "Assets/verademo.war"
         }

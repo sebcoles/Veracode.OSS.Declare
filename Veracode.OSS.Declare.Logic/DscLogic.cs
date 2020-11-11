@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Veracode.OSS.Declare.Configuration.Models;
 using Veracode.OSS.Declare.Shared;
 using Veracode.OSS.Wrapper;
 using Veracode.OSS.Wrapper.Models;
