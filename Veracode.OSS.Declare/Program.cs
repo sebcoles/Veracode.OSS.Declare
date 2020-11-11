@@ -71,40 +71,43 @@ namespace Veracode.OSS.Declare
 
         static int Test(TestOptions options)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
             foreach (var app in declareConfigRepository.Apps())
             {
-                _logger.LogInformation($"Testing configuration for {app.application_name}");
+                _logger.LogInformation(_localizationRepository.GetText("INFO00002", app.application_name));
                 bool doesScanConfirm;
                 if (options.LastScan)
                 {
-                    _logger.LogInformation($"Testing against the lastest scan");
+                    _logger.LogInformation(_localizationRepository.GetText("INFO00003"));
                     doesScanConfirm = _dscLogic.ConformToPreviousScan(app, app.modules.ToArray());
                 }
                 else
                 {
-                    _logger.LogInformation($"Testing against a new scan");
+                    _logger.LogInformation(_localizationRepository.GetText("INFO00004"));
                     doesScanConfirm = _dscLogic.ConformConfiguration(app,
                             app.upload.ToArray(),
                             app.modules.ToArray(), true);
                 }
 
-                var message = doesScanConfirm ? "DOES" : "DOES NOT";
                 if(doesScanConfirm)
-                    _logger.LogInformation($"Application {app.application_name} scan config {message} conforms.");
+                    _logger.LogInformation(_localizationRepository.GetText("INFO00005", app.application_name));
                 else
-                    _logger.LogWarning($"Application {app.application_name} scan config {message} conforms.");
+                    _logger.LogWarning(_localizationRepository.GetText("WARN00001", app.application_name));
             }
 
-            _logger.LogInformation($"Scan Configuration testing complete.");
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogInformation(_localizationRepository.GetText("INFO00006"));
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int Scan(ScanOptions options)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
 
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
@@ -113,18 +116,18 @@ namespace Veracode.OSS.Declare
                 bool scheduled = false;
 
                 if (String.IsNullOrWhiteSpace(app.policy_schedule))
-                    _logger.LogWarning($"There is no policy schedule configured for {app.application_name}");
+                    _logger.LogWarning(_localizationRepository.GetText("WARN00002", app.application_name));
                 else
                     scheduled = _dscLogic.IsScanDueFromSchedule(app);
 
                 if(scheduled || options.IgnoreSchedule)
                 {
-                    _logger.LogInformation($"Starting scan for {app.application_name}");
-                    _logger.LogInformation($"Files being scanned are:");
+                    _logger.LogWarning(_localizationRepository.GetText("INFO00007", app.application_name));
+                    _logger.LogWarning(_localizationRepository.GetText("INFO00008", app.application_name));
                     foreach (var file in app.upload.Select(x => x.location))
                         _logger.LogInformation($"{file}");
 
-                    _logger.LogInformation($"Modules being scanned are:");
+                    _logger.LogWarning(_localizationRepository.GetText("INFO00009", app.application_name));
                     foreach (var module in app.modules.Select(x => $"module_name={x.module_name},entry_point={x.entry_point}"))
                         _logger.LogInformation($"{module}");
 
@@ -132,14 +135,16 @@ namespace Veracode.OSS.Declare
                 }
             }
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int Evaluate(EvaluateOptions options)
         {
-            _logger.LogInformation("Evaluating the applications in the configuration file.");
-           
+            _logger.LogDebug("Evaluating the applications in the configuration file.");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
+
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
             foreach (var app in declareConfigRepository.Apps())
@@ -155,13 +160,16 @@ namespace Veracode.OSS.Declare
                 _logger.LogInformation($"Evaluation complete for {app.application_name}");
             }
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int Configure(ConfigureOptions options)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
+
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
             foreach (var app in declareConfigRepository.Apps())
             {
@@ -181,13 +189,16 @@ namespace Veracode.OSS.Declare
                 _logger.LogInformation($"build complete for {app.application_name}");
             }
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int MitigationTemplates(MitigationOptions options)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
+
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
 
             foreach (var app in declareConfigRepository.Apps())
@@ -197,13 +208,16 @@ namespace Veracode.OSS.Declare
                 _logger.LogInformation($"Generated mitigations templates for {app.application_name}");
             }
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int Delete(DeleteOptions options)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()} with scan options {options}");
+            var _localizationRepository = LoggingHelper.GetLocalizationRepository(options.Language);
+            _logger.LogInformation(_localizationRepository.GetText("INFO00001", options.ToString()));
+
             var declareConfigRepository = new DeclareConfigurationRepository(options.JsonFileLocation);
             foreach (var app in declareConfigRepository.Apps())
             {
@@ -212,18 +226,18 @@ namespace Veracode.OSS.Declare
                 _logger.LogInformation($"Tear down complete for {app.application_name}");
             }
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
 
         static int HandleParseError(IEnumerable<Error> errs)
         {
-            _logger.LogInformation($"Entering {LoggingHelper.GetMyMethodName()}");
+            _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()}");
 
             foreach(var error in errs)
                 _logger.LogError($"{error}");
 
-            _logger.LogInformation($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
+            _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;
         }
     }

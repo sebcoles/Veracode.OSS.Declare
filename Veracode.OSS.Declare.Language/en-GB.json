@@ -1,0 +1,64 @@
+{
+  "messages": [
+    {
+      "code": "WARN00001",
+      "value": "Application {0} scan config DOES NOT conform"
+    },
+    {
+      "code": "WARN00002",
+      "value": "There is no policy schedule configured for {0}"
+    },
+    {
+      "code": "WARN00003",
+      "value": ""
+    },
+    {
+      "code": "WARN00004",
+      "value": ""
+    },
+    {
+      "code": "WARN00005",
+      "value": ""
+    },
+    {
+      "code": "INFO00001",
+      "value": "Scan options are {0}"
+    },
+    {
+      "code": "INFO00002",
+      "value": "Testing configuration for {0}"
+    },
+    {
+      "code": "INFO00003",
+      "value": "Testing against the lastest scan"
+    },
+    {
+      "code": "INFO00004",
+      "value": "Testing against a new scan"
+    },
+    {
+      "code": "INFO00005",
+      "value": "Application {0} scan config DOES conform"
+    },
+    {
+      "code": "INFO00006",
+      "value": "Scan Configuration testing complete"
+    },
+    {
+      "code": "INFO00007",
+      "value": "Starting scan for {0}"
+    },
+    {
+      "code": "INFO00008",
+      "value": "Files being scanned are:"
+    },
+    {
+      "code": "INFO00009",
+      "value": "Modules being scanned are:"
+    },
+    {
+      "code": "INFO00010",
+      "value": ""
+    }
+  ]
+}

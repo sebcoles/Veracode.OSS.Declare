@@ -1,0 +1,44 @@
+{
+  "messages": [
+    {
+      "code": "INFO00001",
+      "value": "Scanoptionen sind {0}"
+    },
+    {
+      "code": "INFO00002",
+      "value": "Konfiguration testen für {0}"
+    },
+    {
+      "code": "INFO00003",
+      "value": "Testen gegen den letzten Scan"
+    },
+    {
+      "code": "INFO00004",
+      "value": "Testen gegen einen neuen Scan"
+    },
+    {
+      "code": "INFO00005",
+      "value": ""
+    },
+    {
+      "code": "INFO00006",
+      "value": ""
+    },
+    {
+      "code": "INFO00007",
+      "value": ""
+    },
+    {
+      "code": "INFO00008",
+      "value": ""
+    },
+    {
+      "code": "INFO00009",
+      "value": ""
+    },
+    {
+      "code": "INFO00010",
+      "value": ""
+    }
+  ]
+}

@@ -14,4 +14,8 @@
     <PackageReference Include="Veracode.OSS.Wrapper" Version="2020.11.11.90919" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Veracode.OSS.Declare.Language\Veracode.OSS.Declare.Language.csproj" />
+  </ItemGroup>
+
 </Project>

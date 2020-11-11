@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Veracode.OSS.Declare.Language\Veracode.OSS.Declare.Language.csproj" />
     <ProjectReference Include="..\Veracode.OSS.Declare.Logic\Veracode.OSS.Declare.Logic.csproj" />
     <ProjectReference Include="..\Veracode.OSS.Declare.Shared\Veracode.OSS.Declare.Shared.csproj" />
   </ItemGroup>
