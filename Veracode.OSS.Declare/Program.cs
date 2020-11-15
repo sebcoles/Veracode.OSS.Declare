@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Veracode.OSS.Declare.Configuration;
 using Veracode.OSS.Declare.Logic;
 using Veracode.OSS.Declare.Options;
@@ -24,7 +25,7 @@ namespace Veracode.OSS.Declare
         static void Main(string[] args)
         {
             IConfiguration Configuration = new ConfigurationBuilder()
-.SetBasePath(Directory.GetCurrentDirectory())
+.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location))
 #if DEBUG
                 .AddJsonFile($"appsettings.Development.json", false)
 #else

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 
 namespace Veracode.OSS.Declare.Language
@@ -17,7 +18,11 @@ namespace Veracode.OSS.Declare.Language
         private MessageContainer _messages;
         public LocalizationRepository(string localization)
         {
-            using StreamReader r = new StreamReader($".\\{localization}.json");
+            using StreamReader r = 
+                new StreamReader($"" +
+                $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}" +
+                $"\\{localization}.json");
+
             string json = r.ReadToEnd();
             _messages = JsonConvert.DeserializeObject<MessageContainer>(json);
 
