@@ -10,6 +10,7 @@ theme:
     - navigation.instant
 nav:
     - Home: index.md
+    - Getting Started: getting_started.md
     - Actions:
         - Configure: actions/configure.md
         - Test: actions/test.md
@@ -19,3 +20,7 @@ nav:
         - Delete: actions/delete.md
     - Download:
         - Artifactory: download/artifactory.md
+    - Integrations:
+        - TeamCity: download/teamcity.md
+        - Jenkins: download/teamcity.md
+        - Docker: download/teamcity.md

@@ -35,7 +35,8 @@ namespace Veracode.OSS.Declare
             var serviceCollection = new ServiceCollection();
             var profileName = Configuration.GetValue<string>("VeracodeProfileName");
             var veracodeCredFilePath = Configuration.GetValue<string>("VeracodeFileLocation");
-            if(String.IsNullOrWhiteSpace(veracodeCredFilePath))
+            var useEnvironmentVariables = Configuration.GetValue<bool>("UseEnvironmentVariables");
+            if(useEnvironmentVariables || String.IsNullOrWhiteSpace(veracodeCredFilePath))
                 serviceCollection.AddTransient(options => Microsoft.Extensions.Options.Options.Create(
                     VeracodeEnvHelper.GetConfiguration()));
             else
