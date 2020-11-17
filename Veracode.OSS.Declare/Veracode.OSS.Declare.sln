@@ -82,14 +82,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "support", "support", "{0332
 		..\docs\support\troubleshooting.md = ..\docs\support\troubleshooting.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{F53AFF9E-BEDC-4243-BC50-6F9D62431037}"
-	ProjectSection(SolutionItems) = preProject
-		..\integrations\github\action.yml = ..\integrations\github\action.yml
-		..\integrations\github\Dockerfile = ..\integrations\github\Dockerfile
-		..\integrations\github\entry_point.sh = ..\integrations\github\entry_point.sh
-		..\integrations\github\README.md = ..\integrations\github\README.md
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,7 +120,6 @@ Global
 		{36F5C0CF-C80F-4EF9-9952-529DA5EE2012} = {7B690D4A-CC7D-4F69-9B2A-55F20299FF8B}
 		{16CAD6E3-9983-4131-9C0D-D07CB1175E26} = {112F31A2-C151-4FCA-BE45-C61CE168FC4D}
 		{0332CF2C-4639-446D-8744-C4BA9C28D6D7} = {112F31A2-C151-4FCA-BE45-C61CE168FC4D}
-		{F53AFF9E-BEDC-4243-BC50-6F9D62431037} = {7B690D4A-CC7D-4F69-9B2A-55F20299FF8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {896A0FF6-EC52-4767-9FAD-5CB6B22EF591}
