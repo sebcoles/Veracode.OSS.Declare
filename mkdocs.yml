@@ -17,3 +17,5 @@ nav:
         - Evaluate: actions/evaluate.md
         - Mitigation: actions/mitigation.md
         - Delete: actions/delete.md
+    - Download:
+        - Artifactory: download/artifactory.md

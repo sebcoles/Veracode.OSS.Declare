@@ -44,6 +44,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{51C6
 		..\scripts\get_latest.sh = ..\scripts\get_latest.sh
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "download", "download", "{045B9370-3723-4D67-B7D7-699BF7109199}"
+	ProjectSection(SolutionItems) = preProject
+		artifactory.md = artifactory.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +81,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9597810A-CD2F-450B-8B98-1815A7DE7CB2} = {112F31A2-C151-4FCA-BE45-C61CE168FC4D}
+		{045B9370-3723-4D67-B7D7-699BF7109199} = {112F31A2-C151-4FCA-BE45-C61CE168FC4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {896A0FF6-EC52-4767-9FAD-5CB6B22EF591}
