@@ -37,7 +37,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "actions", "actions", "{9597
 		..\docs\actions\test.md = ..\docs\actions\test.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veracode.OSS.Declare.Language", "..\Veracode.OSS.Declare.Language\Veracode.OSS.Declare.Language.csproj", "{D7F3C9CE-0DD8-478D-810B-073957C3FDAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veracode.OSS.Declare.Language", "..\Veracode.OSS.Declare.Language\Veracode.OSS.Declare.Language.csproj", "{D7F3C9CE-0DD8-478D-810B-073957C3FDAB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{51C60CA5-2715-4930-9748-FBE1198CE599}"
+	ProjectSection(SolutionItems) = preProject
+		..\scripts\get_latest.sh = ..\scripts\get_latest.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
