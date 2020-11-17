@@ -46,7 +46,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{51C6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "download", "download", "{045B9370-3723-4D67-B7D7-699BF7109199}"
 	ProjectSection(SolutionItems) = preProject
-		artifactory.md = artifactory.md
+		..\docs\download\artifactory.md = ..\docs\download\artifactory.md
 	EndProjectSection
 EndProject
 Global
