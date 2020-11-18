@@ -28,6 +28,6 @@ else
 fi
 
 # Set to path
-echo "export PATH=:/${DESTINATION_DIRECTORY}:${PATH}" >> /root/.bashrc
+echo "export PATH=:/${DESTINATION_DIRECTORY}:$PATH" >> /root/.bashrc
 
 echo $PROJECT_NAME downloaded!
