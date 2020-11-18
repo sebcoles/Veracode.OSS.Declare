@@ -1,7 +1,7 @@
 #!/bin/bash
 PROJECT_NAME="Veracode.OSS.Declare"
 RELEASE_URL="https://api.github.com/repos/sebcoles/veracode.oss.declare/releases/latest"
-DESTINATION_DIRECTORY="/declare"
+DESTINATION_DIRECTORY="declare"
 
 echo $PROJECT_NAME latest binary downloader
 
