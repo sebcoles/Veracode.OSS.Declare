@@ -29,6 +29,6 @@ fi
 
 # Set to path
 cd $DESTINATION_DIRECTORY
-export PATH=\$PATH:$(pwd)
+export PATH=$PATH:$(pwd)
 
 echo $PROJECT_NAME downloaded!

@@ -21,6 +21,7 @@ nav:
     - Download:
         - Artifactory: download/artifactory.md
     - Integrations:
-        - TeamCity: download/teamcity.md
-        - Jenkins: download/teamcity.md
-        - Docker: download/teamcity.md
+        - GitHub: integrations/github.md
+        - TeamCity: integrations/teamcity.md
+        - Jenkins: integrations/teamcity.md
+        - Docker: integrations/teamcity.md

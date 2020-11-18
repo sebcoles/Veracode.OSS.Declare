@@ -1,4 +1,4 @@
-FROM alpine:3.10
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS base
 
 # Install Declare
 RUN curl -LO https://raw.githubusercontent.com/sebcoles/Veracode.OSS.Declare/master/scripts/get_latest.sh
