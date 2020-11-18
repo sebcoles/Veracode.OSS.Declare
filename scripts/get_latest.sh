@@ -28,7 +28,6 @@ else
 fi
 
 # Set to path
-cd $DESTINATION_DIRECTORY
-export PATH=$PATH:$(pwd)
+echo "export PATH=:/${$DESTINATION_DIRECTORY}:${PATH}" >> /root/.bashrc
 
 echo $PROJECT_NAME downloaded!
