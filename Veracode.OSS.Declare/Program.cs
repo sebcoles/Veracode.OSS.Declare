@@ -237,7 +237,7 @@ namespace Veracode.OSS.Declare
             _logger.LogDebug($"Entering {LoggingHelper.GetMyMethodName()}");
 
             foreach(var error in errs)
-                _logger.LogError($"{error}");
+                _logger.LogCritical($"{error}");
 
             _logger.LogDebug($"Exiting {LoggingHelper.GetMyMethodName()} with value {1}");
             return 1;

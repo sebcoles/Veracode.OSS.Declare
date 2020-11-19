@@ -19,15 +19,15 @@ namespace Veracode.OSS.Declare.Language
         public LocalizationRepository(string localization)
         {
             using StreamReader r = 
-                new StreamReader($"" +
-                $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}" +
-                $"\\{localization}.json");
+                new StreamReader(Path.Combine(
+                $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}",
+                $"{localization}.json"));
 
             string json = r.ReadToEnd();
             _messages = JsonConvert.DeserializeObject<MessageContainer>(json);
 
             if (!_messages.messages.Any())
-                throw new ArgumentException($".\\{localization}.json does not contain any log messages!");
+                throw new ArgumentException($"{localization}.json does not contain any log messages!");
         }
 
         public class MessageContainer
