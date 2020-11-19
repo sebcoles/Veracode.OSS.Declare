@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="NLog" Version="4.7.5" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
-    <PackageReference Include="Veracode.OSS.Declare.Configuration" Version="2020.11.11.113002" />
+    <PackageReference Include="Veracode.OSS.Declare.Configuration" Version="2020.11.12.110351" />
   </ItemGroup>
 
   <ItemGroup>
