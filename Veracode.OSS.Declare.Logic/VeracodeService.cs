@@ -73,7 +73,7 @@ namespace Veracode.OSS.Declare.Logic
                 business_owner = app.business_owner,
                 business_owner_email = app.business_owner_email,
                 business_criticality = VeracodeEnumConverter.Convert(app.criticality),
-                policy = app.policy.name
+                policy = app.application_name
             });
             return _veracodeRepository
                 .GetAllApps()

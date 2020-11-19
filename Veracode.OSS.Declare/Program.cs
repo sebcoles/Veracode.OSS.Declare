@@ -176,10 +176,12 @@ namespace Veracode.OSS.Declare
             foreach (var app in declareConfigRepository.Apps())
             {
                 _logger.LogInformation($"Starting build for {app.application_name}");
+
+                _dscLogic.MakeItSoPolicy(app, app.policy);
+
                 if (!_dscLogic.MakeItSoApp(app))
                     return 0;
 
-                _dscLogic.MakeItSoPolicy(app, app.policy);
                 _dscLogic.MakeItSoTeam(app);
                 foreach (var user in app.users)
                 {
